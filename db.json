@@ -1,0 +1,27 @@
+{
+    "api-login": {
+        "success": true,
+        "session": {
+            "id": "1234"
+        },
+        "user": {
+            "id": "1",
+            "email": "user@example.com"
+        }
+    },
+    "api-logout": {
+        "success": true
+    },
+    "api-users": [
+        {
+            "id": "1",
+            "email": "user@example.com",
+            "password": "password123"
+        },
+        {
+            "id": "2",
+            "email": "another@example.com",
+            "password": "password456"
+        }
+    ]
+}

@@ -21,3 +21,9 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Arquivos específicos
+db.json
+package-lock.json
+
+
