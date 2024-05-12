@@ -1,5 +1,6 @@
 {
   "name": "my-quackontadorapp",
+  "homepage": "https://codingwithayuri.github.io/quackontador/public/",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
