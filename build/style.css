@@ -1,0 +1,211 @@
+/*
+ * Globals
+ */
+
+/* Links */
+a,
+a:focus,
+a:hover {
+  color: #fff;
+}
+
+/* Custom default button */
+.btn-secondary,
+.btn-secondary:hover,
+.btn-secondary:focus {
+  color: #333;
+  text-shadow: none; /* Prevent inheritance from `body` */
+  background-color: #fff;
+  border: 0.05rem solid #fff;
+}
+
+/*
+ * Base 
+ */
+
+html,
+body {
+  height: 100%;
+  background-color: #333;
+  display: flex;
+  color: #fff;
+  text-shadow: 0 0.05rem 0.1rem rgba(0, 0, 0, 0.5);
+  box-shadow: inset 1 1 5rem rgba(0, 0, 0, 0.5);
+  margin: 0;
+  padding: 0;
+  flex-direction: column
+}
+
+.disable-bootstrap-table {
+  --bs-table-color: inherit !important; /* herda a cor do texto do pai */
+  --bs-table-bg: inherit !important; /* herda a cor de fundo do pai */
+  --bs-table-striped-color: inherit !important; /* herda a cor do texto do pai */
+}
+
+/* Login */
+
+.disable-btn-bg {
+  --bs-btn-bg: inherit !important; /* herda a cor de fundo do pai */
+}
+
+.profile-image-pic {
+  height: 200px;
+  width: 200px;
+  object-fit: cover;
+}
+
+a {
+  text-decoration: none;
+}
+
+.disable-dropdown-menu {
+  --bs-dropdown-link-hover-bg: initial; /* Desabilitando a cor de fundo do hover */
+}
+
+.disable-dropdown-item-color {
+  color: white !important; /* herda a cor do texto do pai */
+}
+
+.small-text-left {
+  text-align: left;
+}
+
+.text-large {
+  font-size: 18px; /* ajuste do tamanho da fonte da tag label*/
+}
+
+.login-text {
+  font-size: 12px;
+}
+
+.login-text-register {
+  font-size: 11px;
+}
+
+/*
+ * Header
+ */
+.masthead {
+  margin-bottom: 1rem;
+}
+
+.inner {
+  padding: 0; /* Remove o padding interno */
+}
+
+.masthead-brand {
+  margin-bottom: 0;
+}
+
+.nav-masthead .nav-link {
+  padding: 0.25rem 0;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+  background-color: transparent;
+  border-bottom: 0.25rem solid transparent;
+}
+
+.nav-masthead .nav-link:hover,
+.nav-masthead .nav-link:focus {
+  border-bottom-color: rgba(255, 255, 255, 0.25);
+}
+
+.nav-masthead .nav-link + .nav-link {
+  margin-left: 1rem;
+}
+
+.nav-masthead .active {
+  color: #fff;
+  border-bottom-color: #fff;
+}
+
+.dropdown-menu {
+  background-color: #333;
+}
+
+.header-title {
+  margin-left: 5px;
+  vertical-align: middle;
+}
+
+@media (min-width: 48em) {
+  .masthead-brand {
+    float: left;
+  }
+  .nav-masthead {
+    float: right;
+  }
+}
+
+/*
+ * Cover
+ */
+.cover {
+  padding: 150px;
+}
+.cover .btn-lg {
+  padding: 0.75rem 1.25rem;
+  font-weight: 700;
+}
+
+.cover-container {
+  min-height: 100vh; /* garante que o container principal ocupe pelo menos a altura total da viewport */
+  display: flex;
+  flex-direction: column;
+  flex: 1; /* faz com que o container estenda para ocupar todo o espaço disponível */
+}
+
+/*
+ * Main
+ */
+
+ .main {
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Centraliza verticalmente */
+  align-items: center; /* Centraliza horizontalmente */
+  flex: 1; /* Ocupa todo o espaço disponível */
+  
+}
+
+/*
+ * Contact Form
+ */
+
+.contact-container {
+  width: 60%; /* Define a largura do container */
+  margin: 0 auto; /* Centraliza horizontalmente o container */
+  padding: 10px; /* Adiciona preenchimento interno ao container */
+  background-color: #333; /* Define a cor de fundo do container */
+  border-radius: 10px; /* Adiciona borda arredondada ao container */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Adiciona sombra ao container */
+}
+
+
+/*
+ * Footer
+ */
+
+ .footer {
+  width: 100%;
+  height: 10px; /* Altura do footer */
+  background-color: #333; /* Cor de fundo do footer */
+  color: #fff; /* Cor do texto do footer */
+  text-align: center; /* Alinhamento do texto do footer */
+}
+
+.mastfoot {
+  margin-top: auto; /* empurra o footer para a base se o conteúdo anterior não ocupar toda a altura */
+  width: 100%;
+  background-color: #333;
+  color: #ffff;
+  text-align: center;
+}
+
+.heart-symbol {
+  color: rgb(205, 28, 93);
+}
+
+.escondido {
+  display: none;
+}
