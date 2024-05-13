@@ -23,11 +23,11 @@ const Header = () => {
       <Container>
       <div className="container inner">
         <Navbar expand="lg" className="justify-content-center disable-btn-bg">
-          <Navbar.Brand className="masthead-brand" as={Link} to="/">
+          <Navbar.Brand className="masthead-brand" as={Link} to="/quackontador">
             <img src="psyduck.png" width="50" height="50" alt="Psyduck Logo" />
           </Navbar.Brand>
           <Link
-            to="/"
+            to="/quackontador"
             className="text-decoration-none d-flex align-items-center ms-0"
           >
             <h3 className="mb-0 ms-0" style={{ fontSize: "25px" }}>

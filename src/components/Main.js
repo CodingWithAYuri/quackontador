@@ -10,7 +10,7 @@ function Main() {
     >
       <Container className="container mb-5">
       <h2 className="cover-heading">Descomplique a sua contabilidade.</h2>
-      <p className="lead">Explicação simples e sem muito blá blá blá :P</p>
+      <p className="lead">Explicação simples e sem muito blá blá blá</p>
       <p className="lead">
         <Link to="/calculos" className="btn btn-lg btn-secondary">
           Vamos aos cálculos!
