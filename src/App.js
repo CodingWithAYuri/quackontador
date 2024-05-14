@@ -1,5 +1,5 @@
 import React from 'react';
-import {  BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import {  HashRouter, Routes, Route } from 'react-router-dom';
 import { Container } from 'react-bootstrap';
 import Header from './components/Header';
 import Main from './components/Main';
@@ -14,7 +14,7 @@ import Logout from './components/Logout';
 
 function App() {
   return (
-    <Router>
+    <HashRouter>
       <CoverContainer style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}> 
         <Container style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           <Routes>
@@ -23,14 +23,14 @@ function App() {
             <Route path="/logout" element={<Logout />} />
             <Route path="/cadastro" element={<SignUpForm />} />
             {/* Rotas com cabeçalho */}
-            <Route path="/quackontador" element={<WithHeader><Main /></WithHeader>} />
+            <Route path="/" element={<WithHeader><Main /></WithHeader>} />
             <Route path="/contactForm" element={<WithHeader><ContactForm /></WithHeader>} />
             <Route path="/calculos" element={<WithHeader><Calculos /></WithHeader>} />
           </Routes>
           <Footer />
         </Container>
       </CoverContainer> 
-    </Router>  
+    </HashRouter>  
   );
 }
 
