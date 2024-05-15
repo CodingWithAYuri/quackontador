@@ -25,13 +25,15 @@ class HttpClient {
       const response = await fetch(url, finalOptions);
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.message || 'Something went wrong');
+        throw new Error(data.error || 'Something went wrong');
       }
       return data;
     } catch (error) {
       throw error;
     }
   }
+
+  
 
   get(path, options = {}) {
     return this.fetch(path, { ...options, method: 'GET' });
