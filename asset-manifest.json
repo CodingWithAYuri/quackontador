@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/quackontador/static/css/main.e6c13ad2.css",
-    "main.js": "/quackontador/static/js/main.24077b0c.js",
+    "main.js": "/quackontador/static/js/main.c327a67f.js",
     "static/js/453.1d6714e3.chunk.js": "/quackontador/static/js/453.1d6714e3.chunk.js",
     "index.html": "/quackontador/index.html",
     "main.e6c13ad2.css.map": "/quackontador/static/css/main.e6c13ad2.css.map",
-    "main.24077b0c.js.map": "/quackontador/static/js/main.24077b0c.js.map",
+    "main.c327a67f.js.map": "/quackontador/static/js/main.c327a67f.js.map",
     "453.1d6714e3.chunk.js.map": "/quackontador/static/js/453.1d6714e3.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.e6c13ad2.css",
-    "static/js/main.24077b0c.js"
+    "static/js/main.c327a67f.js"
   ]
 }
