@@ -1,20 +1,17 @@
 import React, { useState } from "react";
 import { Col, CardBody } from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom";  // Importe useNavigate aqui
-import HttpClient from "./HttpClient";  // Certifique-se de importar a classe HttpClient
+import { Link, useNavigate } from "react-router-dom";  
+import { mockedLoginResponse } from "../services/ApiMock";
 
 function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const navigate = useNavigate();  // Inicialize o useNavigate
-  const apiClient = new HttpClient("http://localhost:3001"); // Altere para a URL do seu JSON server
-
+  const navigate = useNavigate();  
+  
   const handleLogin = async (event) => {
     event.preventDefault(); // Prevenir o comportamento padrão do formulário
     try {
-      // TODO alterar em producao
-      // const data = await apiClient.post("/login", { email, password });
-      const data = await apiClient.get("/api-login");
+      const data = mockedLoginResponse();
       console.log("Login successful:", data);
 
       // Aqui você salva no localStorage

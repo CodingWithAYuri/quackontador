@@ -50,4 +50,4 @@ class HttpClient {
   }
 }
 
-export default HttpClient;  // Adicionando a exportação padrão
+export default HttpClient;  

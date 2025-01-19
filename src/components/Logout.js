@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import HttpClient from "./HttpClient";
+//import HttpClient from "./HttpClient";
+import { mockedLoginResponse } from "../services/ApiMock";
 
 function Logout() {
   console.log("Logout effect running");
@@ -22,8 +23,10 @@ function Logout() {
 }
 
 function serverLogout() {
-  const apiClient = new HttpClient("http://localhost:3001");
-  return apiClient.get("/api-logout");
+  //const apiClient = new HttpClient("http://localhost:3001");
+  const data = mockedLoginResponse();
+  //return apiClient.get("/api-logout");
+  console.log("Logout successful:", data);
 }
 
 export default Logout;

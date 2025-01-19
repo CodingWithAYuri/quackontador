@@ -44,7 +44,7 @@ function SignUpForm() {
         <div className="card-body bg-light p-lg-5 p-md-4 p-sm-3 p-2" autoComplete="off">
           <div className="text-center">
             <img
-              src="https://cdn.pixabay.com/photo/2016/03/31/19/56/avatar-1295397__340.png"
+              src="%PUBLIC_URL%/avatar.png"
               className="img-fluid profile-image-pic img-thumbnail rounded-circle my-3"
               width="200px"
               alt="profile"
