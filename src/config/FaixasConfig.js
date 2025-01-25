@@ -25,3 +25,8 @@ export const faixasIr = {
 
 // Apontamento das faixas de 2024 para 2025
 faixasIr[2025] = faixasIr[2024];
+
+export const salariosMinimos = {
+  2024: 1412.00,
+  2025: 1518.00,
+};
