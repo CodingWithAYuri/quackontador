@@ -5,7 +5,7 @@ import Header from './components/Header';
 import Main from './components/Main';
 import Footer from './components/Footer';
 import ContactForm from './components/ContactForm';
-import Calculos from './components/Calculos';
+import Calculadora from './components/Calculadora';
 import CoverContainer from './components/CoverContainer'; 
 import LoginForm from './components/LoginForm';
 import SignUpForm from './components/SignUpForm';
@@ -24,7 +24,7 @@ function App() {
             {/* Rotas com cabeçalho e rodapé */}
             <Route path="/" element={<WithHeaderAndFooter><Main /></WithHeaderAndFooter>} />
             <Route path="/contactForm" element={<WithHeaderAndFooter><ContactForm /></WithHeaderAndFooter>} />
-            <Route path="/calculos" element={<WithHeaderAndFooter><Calculos /></WithHeaderAndFooter>} />
+            <Route path="/calculos" element={<WithHeaderAndFooter><Calculadora /></WithHeaderAndFooter>} />
           </Routes>
         </Container>
       </CoverContainer> 
