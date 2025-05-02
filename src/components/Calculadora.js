@@ -16,7 +16,7 @@ const Calculadora = () => {
 
     const inssClt = calcularInssClt(salarioFloat, ano);
     const irClt = calcularIrClt(salarioFloat, ano);
-    const inssAutonomo = calcularInssAutonomo(salarioFloat);
+    const inssAutonomo = calcularInssAutonomo(salarioFloat, ano);
 
     setResultados({ inssClt, irClt, inssAutonomo });
   };
@@ -27,10 +27,10 @@ const Calculadora = () => {
   };
 
   return (
-    <Container>
+    <Container className="d-flex flex-column justify-content-center min-vh-100">
       <h1 className="text-center mb-5">Calculadora</h1>
       {resultados ? (
-        <div>
+        <div className="mx-auto" style={{ maxWidth: '600px' }}>
           <table className="table table-striped">
             <thead>
               <tr>
@@ -55,8 +55,9 @@ const Calculadora = () => {
           <Button onClick={handleNewCalculation}>Novo Cálculo</Button>
         </div>
       ) : (
-        <form onSubmit={handleSubmit}>
-          <div className="form-group mb-4">
+        <form onSubmit={handleSubmit} className="w-100">
+          <div className="mx-auto" style={{ maxWidth: '500px' }}>
+            <div className="form-group mb-4">
             <label htmlFor="salario">Salário Mensal</label>
             <input
               type="number"
@@ -65,6 +66,7 @@ const Calculadora = () => {
               value={salario}
               onChange={(e) => setSalario(e.target.value)}
             />
+          </div>
           </div>
           <div className="form-group mb-4">
             <label htmlFor="ano">Ano</label>

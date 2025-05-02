@@ -30,11 +30,11 @@ export const calcularInssAutonomo = (salario, ano) => {
     throw new Error(`Salário mínimo não definido para o ano ${ano}`);
   }
 
-  const contribuicaoMinima = salariosMinimos * 0.2; // 20% do salário mínimo
-  const contribuicaoMaxima = salariosMinimos * 11; // Teto baseado em 11 salários mínimos
-  const contribuicao = salario * 0.2; // Contribuição padrão de 20%
+  const contribuicaoMinima = salarioMinimo * 0.2; // Corrigido: usar salarioMinimo
+  const contribuicaoMaxima = salarioMinimo * 11; // Corrigido: usar salarioMinimo
+  const contribuicao = salario * 0.2;
 
-  if (salario <= salariosMinimos) {
+  if (salario <= salarioMinimo) { // Corrigido: usar salarioMinimo
     return contribuicaoMinima.toFixed(2);
   }
 
