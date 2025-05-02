@@ -3,58 +3,67 @@ import { Navbar, Container, Nav, Dropdown } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { useUserEmail } from "../hooks/useUserEmail";
 import Avatar from "./Avatar";
-import { IMAGE_PATHS } from "../constants/paths"; // Importe a constante
+import { IMAGE_PATHS } from "../constants/paths";
 
 const Header = () => {
   const email = useUserEmail();
 
   return (
-    <div className="masthead masthead-nav">
+    <header className="masthead masthead-nav">
       <Container>
-        <div className="container inner">
-          <Navbar expand="lg" className="justify-content-center disable-btn-bg">
-            {/* Logo */}
-            <Navbar.Brand as={Link} to="/" className="masthead-brand">
-              <Avatar src={IMAGE_PATHS.logo} size={50} alt="Psyduck Logo" />
+        <Navbar expand="lg" className="justify-content-between disable-btn-bg">
+          <div className="d-flex align-items-center">
+            {/* Logo e Título */}
+            <Navbar.Brand as={Link} to="/" className="d-flex align-items-center">
+              <Avatar 
+                src={IMAGE_PATHS.logo} 
+                size={50} 
+                alt="Psyduck Logo"
+                className="me-2"
+              />
+              <h3 className="mb-0 header-title">QuackContador</h3>
             </Navbar.Brand>
-            
-            {/* Título */}
-            <Link to="/" className="text-decoration-none d-flex align-items-center ms-0">
-              <h3 className="mb-0 ms-0 header-title">QuackContador</h3>
-            </Link>
+          </div>
 
-            {/* Menu Avatar */}
-            <Navbar.Collapse id="navbarNav" className="justify-content-end">
-              <Nav>
-                <Dropdown drop="down">
-                  <Dropdown.Toggle variant="" id="navbarDropdownMenuAvatar">
-                    <Avatar src={IMAGE_PATHS.avatar} size={40} alt="User Avatar" />
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu className="disable-dropdown-menu">
-                    <Dropdown.Item as={Link} to="/contactForm" className="disable-dropdown-item-color">
-                      <i className="far fa-envelope-open ms-2" />
-                      <span className="ms-2">Contato</span>
+          {/* Menu Avatar */}
+          <Navbar.Collapse id="navbarNav" className="justify-content-end">
+            <Nav className="align-items-center">
+              <p className="mb-0 me-2">{email ? `Olá, ${email}` : "Não logado"}</p>
+              <Dropdown>
+                <Dropdown.Toggle 
+                  variant="" 
+                  id="navbarDropdownMenuAvatar"
+                  className="p-0 bg-transparent border-0"
+                >
+                  <Avatar 
+                    src={IMAGE_PATHS.avatar} 
+                    size={40} 
+                    alt="User Avatar"
+                  />
+                </Dropdown.Toggle>
+                <Dropdown.Menu align="end" className="disable-dropdown-menu">
+                  <Dropdown.Item as={Link} to="/contactForm" className="disable-dropdown-item-color">
+                    <i className="far fa-envelope-open" />
+                    <span className="ms-2">Contato</span>
+                  </Dropdown.Item>
+                  {email ? (
+                    <Dropdown.Item as={Link} to="/logout" className="disable-dropdown-item-color">
+                      <i className="fas fa-sign-out-alt" />
+                      <span className="ms-2">Logout</span>
                     </Dropdown.Item>
-                    {email ? (
-                      <Dropdown.Item as={Link} to="/logout" className="disable-dropdown-item-color">
-                        <i className="fas fa-sign-in-alt ms-2" />
-                        <span className="ms-2">Logout</span>
-                      </Dropdown.Item>
-                    ) : (
-                      <Dropdown.Item as={Link} to="/login" className="disable-dropdown-item-color">
-                        <i className="fas fa-sign-in-alt ms-2" />
-                        <span className="ms-2">Login</span>
-                      </Dropdown.Item>
-                    )}
-                  </Dropdown.Menu>
-                </Dropdown>
-              </Nav>
-              <p className="ms-2 mb-0">{email ? `Olá, ${email}` : "Not logged in"}</p>
-            </Navbar.Collapse>
-          </Navbar>
-        </div>
+                  ) : (
+                    <Dropdown.Item as={Link} to="/login" className="disable-dropdown-item-color">
+                      <i className="fas fa-sign-in-alt" />
+                      <span className="ms-2">Login</span>
+                    </Dropdown.Item>
+                  )}
+                </Dropdown.Menu>
+              </Dropdown>
+            </Nav>
+          </Navbar.Collapse>
+        </Navbar>
       </Container>
-    </div>
+    </header>
   );
 };
 

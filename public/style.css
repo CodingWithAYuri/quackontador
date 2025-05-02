@@ -119,13 +119,15 @@ a {
   border-bottom-color: #fff;
 }
 
-.dropdown-menu {
-  background-color: #333;
-}
-
 .header-title {
   margin-left: 5px;
   vertical-align: middle;
+  color: #fff;
+  font-weight: bold;
+}
+
+.dropdown-menu {
+  background-color: #333;
 }
 
 @media (min-width: 48em) {

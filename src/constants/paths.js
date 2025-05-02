@@ -1,4 +1,7 @@
+import psyduckLogo from '../assets/images/psyduck.png';
+import userAvatar from '../assets/images/avatar.png';
+
 export const IMAGE_PATHS = {
-    logo: "/images/psyduck.png",
-    avatar: "/images/user.png",
-  };
+    logo: psyduckLogo,
+    avatar: userAvatar,
+};
