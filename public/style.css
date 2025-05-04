@@ -211,3 +211,15 @@ a {
 .escondido {
   display: none;
 }
+.white-bg-select {
+  background-color: white !important;
+}
+
+.white-bg-select:focus {
+  background-color: white !important;
+}
+
+.white-bg-select option {
+  background-color: white !important;
+  color: black !important;
+}
