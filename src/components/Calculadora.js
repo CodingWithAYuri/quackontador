@@ -3,13 +3,13 @@ import { Container, Button, Form, Row, Col, Table } from 'react-bootstrap';
 import { calcularInssClt, calcularIrClt, calcularInssAutonomo } from '../components/Calculos';
 
 const formatarMoeda = (valor) => {
-  return valor.toLocaleString('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'decimal', 
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
-  });
+  }).format(valor);
 };
+
 
 const Calculadora = () => {
   useEffect(() => {
@@ -34,20 +34,24 @@ const Calculadora = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    const salarioFloat = parseFloat(salario.replace(/\./g, '').replace(',', '.'));
-    if (isNaN(salarioFloat) || salarioFloat <= 0) return;
-
-    const inssClt = calcularInssClt(salarioFloat, ano);
-    const irClt = calcularIrClt(salarioFloat - inssClt, ano);
-    const inssAutonomo = calcularInssAutonomo(salarioFloat, ano);
-
-    setResultados({ 
+    
+    // Converter entrada para número corretamente
+    const salarioNumerico = parseFloat(
+      salario.replace(/\./g, '').replace(',', '.')
+    );
+  
+    // Garantir que os cálculos retornem números
+    const inssClt = Number(calcularInssClt(salarioNumerico, ano));
+    const irClt = Number(calcularIrClt(salarioNumerico - inssClt, ano));
+    const inssAutonomo = Number(calcularInssAutonomo(salarioNumerico, ano));
+  
+    // Aplicar formatação
+    setResultados({
       inssClt: formatarMoeda(inssClt),
       irClt: formatarMoeda(irClt),
       inssAutonomo: formatarMoeda(inssAutonomo),
-      salarioLiquidoClt: formatarMoeda(salarioFloat - inssClt - irClt),
-      salarioLiquidoAutonomo: formatarMoeda(salarioFloat - inssAutonomo - irClt)
+      salarioLiquidoClt: formatarMoeda(salarioNumerico - inssClt - irClt),
+      salarioLiquidoAutonomo: formatarMoeda(salarioNumerico - inssAutonomo - irClt)
     });
   };
 
@@ -73,8 +77,8 @@ const Calculadora = () => {
           <div className="mx-auto" style={{ maxWidth: '600px' }}>
 
 
-            <div style={{ 
-              border: '1px solid rgba(255, 255, 255, 0.2)', 
+            <div style={{
+              border: '1px solid rgba(255, 255, 255, 0.2)',
               borderRadius: '12px',
               background: '#333',
               backdropFilter: 'blur(10px)',
@@ -82,12 +86,12 @@ const Calculadora = () => {
               marginBottom: 0
             }}>
               <div className="mb-0 p-0" style={{ margin: 0, padding: 0 }}>
-                <Table 
-                  responsive 
-                  bordered 
-                  size="sm" 
+                <Table
+                  responsive
+                  bordered
+                  size="sm"
                   className="table-modern"
-                  style={{ 
+                  style={{
                     borderColor: 'rgba(0, 0, 0, 0.1)',
                     background: 'white',
                     borderCollapse: 'separate',
@@ -98,23 +102,23 @@ const Calculadora = () => {
                   }}
                 >
                   <thead>
-                    <tr style={{ 
+                    <tr style={{
                       background: '#f8f9fa',
                       borderBottom: '2px solid #e9ecef'
                     }}>
-                      <th className="text-center py-3 px-4" style={{ 
+                      <th className="text-center py-3 px-4" style={{
                         background: 'transparent',
                         fontWeight: '600',
                         fontSize: '1.1rem',
                         color: '#212529'
                       }}></th>
-                      <th className="text-center py-3 px-4" style={{ 
+                      <th className="text-center py-3 px-4" style={{
                         background: 'transparent',
                         fontWeight: '600',
                         fontSize: '1.1rem',
                         color: '#212529'
                       }}>CLT</th>
-                      <th className="text-center py-3 px-4" style={{ 
+                      <th className="text-center py-3 px-4" style={{
                         background: 'transparent',
                         fontWeight: '600',
                         fontSize: '1.1rem',
@@ -124,30 +128,30 @@ const Calculadora = () => {
                   </thead>
                   <tbody>
                     <tr style={{ background: '#ffffff' }}>
-                      <th className="text-center py-3 px-4" style={{ fontWeight: '500', color: '#212529' }}>INSS</th>
-                      <td className="text-center py-3 px-4" style={{ color: '#212529' }}>{resultados.inssClt}</td>
-                      <td className="text-center py-3 px-4" style={{ color: '#212529' }}>{resultados.inssAutonomo}</td>
+                      <th className="text-center py-3 px-4" style={{ fontWeight: '600', fontSize: '1.1rem', color: '#212529' }}>INSS</th>
+                      <td className="valor" style={{ fontSize: '1.1rem' }}>{resultados.inssClt}</td>
+                      <td className="valor" style={{ fontSize: '1.1rem' }}>{resultados.inssAutonomo}</td>
                     </tr>
                     <tr style={{ background: '#f9f9f9' }}>
-                      <th className="text-center py-3 px-4" style={{ fontWeight: '500', color: '#212529' }}>IR</th>
-                      <td className="text-center py-3 px-4" style={{ color: '#212529' }}>{resultados.irClt}</td>
-                      <td className="text-center py-3 px-4" style={{ color: '#212529' }}>{resultados.irClt}</td>
+                      <th className="text-center py-3 px-4" style={{ fontWeight: '600', fontSize: '1.1rem', color: '#212529' }}>IR</th>
+                      <td className="valor" style={{ fontSize: '1.1rem' }}>{resultados.irClt}</td>
+                      <td className="valor" style={{ fontSize: '1.1rem' }}>{resultados.irClt}</td>
                     </tr>
                     <tr style={{ background: '#ffffff', borderTop: '2px solid #dee2e6' }}>
-                      <th className="text-center py-4 px-4" style={{ fontWeight: '600', fontSize: '1.1rem', color: '#212529' }}>Salário Líquido</th>
-                      <td className="text-center py-4 px-4 fw-bold" style={{ fontSize: '1.1rem', color: '#212529' }}>{resultados.salarioLiquidoClt}</td>
-                      <td className="text-center py-4 px-4 fw-bold" style={{ fontSize: '1.1rem', color: '#212529' }}>{resultados.salarioLiquidoAutonomo}</td>
+                      <th className="text-center py-3 px-4" style={{ fontWeight: '600', fontSize: '1.1rem', color: '#212529' }}>Salário Líquido</th>
+                      <td className="valor total" style={{ fontSize: '1.1rem' }}>{resultados.salarioLiquidoClt}</td>
+                      <td className="valor total" style={{ fontSize: '1.1rem' }}>{resultados.salarioLiquidoAutonomo}</td>
                     </tr>
                   </tbody>
                 </Table>
               </div>
             </div>
-            <Button 
-              onClick={handleNewCalculation} 
-              variant="outline-light" 
+            <Button
+              onClick={handleNewCalculation}
+              variant="outline-light"
               size="lg"
-              className="mt-2 px-4"
-              style={{ 
+              className="mt-4 px-4"
+              style={{
                 borderRadius: '8px',
                 transition: 'all 0.2s ease-in-out',
               }}
@@ -169,7 +173,7 @@ const Calculadora = () => {
                     onChange={handleSalarioChange}
                     placeholder="0,00"
                     inputMode="decimal"
-                    style={{ 
+                    style={{
                       height: '48px',
                       fontSize: '1.1rem',
                       borderRadius: '8px',
@@ -189,9 +193,9 @@ const Calculadora = () => {
                     id="ano"
                     value={ano}
                     onChange={(e) => setAno(parseInt(e.target.value))}
-                    style={{ 
+                    style={{
                       height: '48px',
-                      fontSize: '1.1rem',  
+                      fontSize: '1.1rem',
                       borderRadius: '8px',
                       border: '1px solid rgba(255, 255, 255, 0.2)',
                       color: 'black',
@@ -209,12 +213,12 @@ const Calculadora = () => {
               </Col>
             </Row>
             <div className="d-flex justify-content-center mt-4">
-              <Button 
-                type="submit" 
-                variant="primary" 
+              <Button
+                type="submit"
+                variant="outline-light"
                 size="lg"
-                className="px-5"
-                style={{ 
+                className="mt-3 px-5"
+                style={{
                   borderRadius: '8px',
                   transition: 'all 0.2s ease-in-out'
                 }}
