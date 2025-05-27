@@ -2,11 +2,13 @@ import { faixasInss, faixasIr,salariosMinimos } from '../config/FaixasConfig';
 
 export const calcularInssClt = (salario, ano) => {
   const faixas = faixasInss[ano];
+  const salarioMinimo = salariosMinimos[ano];
+  const baseCalculo = Math.max(salario, salarioMinimo);
   let total = 0;
 
   faixas.forEach(({ faixa_anterior, faixa_atual, aliquota }) => {
-    if (salario > faixa_anterior) {
-      total += (Math.min(salario, faixa_atual) - faixa_anterior) * aliquota;
+    if (baseCalculo > faixa_anterior) {
+      total += (Math.min(baseCalculo, faixa_atual) - faixa_anterior) * aliquota;
     }
   });
 
