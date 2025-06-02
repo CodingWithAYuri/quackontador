@@ -1,0 +1,28 @@
+/* Estilo para garantir que todo o texto fique justificado */
+.text-justified {
+  text-align: justify;
+  text-justify: inter-word;
+}
+
+/* Aplicar justificação a todos os parágrafos e listas dentro do container */
+.text-justified p,
+.text-justified ul,
+.text-justified li,
+.text-justified div {
+  text-align: justify;
+  text-justify: inter-word;
+}
+
+/* Garantir que os itens das listas também fiquem justificados */
+.text-justified ul li,
+.text-justified ol li {
+  text-align: justify;
+  margin-bottom: 0.5rem;
+}
+
+/* Manter o alinhamento dos ícones */
+.text-justified .bi {
+  display: inline-block;
+  text-align: center;
+  min-width: 24px;
+}
