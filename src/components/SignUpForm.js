@@ -95,8 +95,8 @@ function SignUpForm() {
       localStorage.setItem('isLoggedIn', 'true');
       localStorage.setItem('userData', JSON.stringify(data));
       
-      // Redireciona para a rota original ou para a página inicial após cadastro bem-sucedido
-      navigate(from, { replace: true });
+      // Redireciona para a página principal após cadastro bem-sucedido
+      navigate('/', { replace: true });
     } catch (error) {
       console.error('Erro no cadastro:', error);
       setSubmitError('Ocorreu um erro ao realizar o cadastro. Tente novamente.');
