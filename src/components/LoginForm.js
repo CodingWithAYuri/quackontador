@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { mockedLoginResponse } from '../services/ApiMock';
 import { FaUserCircle, FaLock } from 'react-icons/fa';
 
@@ -9,6 +9,10 @@ function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Pega a rota de redirecionamento da localização ou usa a página inicial como padrão
+  const from = location.state?.from || '/';
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -46,7 +50,9 @@ function LoginForm() {
       
       localStorage.setItem('isLoggedIn', 'true');
       localStorage.setItem('userData', JSON.stringify(data));
-      navigate('/');
+      
+      // Redireciona para a rota original ou para a página inicial
+      navigate(from, { replace: true });
     } catch (err) {
       console.error('Login failed:', err);
       setError('Falha no login. Verifique suas credenciais.');
@@ -257,6 +263,7 @@ function LoginForm() {
           <span style={{ color: '#fff' }}>Não tem uma conta? </span>
           <Link 
             to="/cadastro" 
+            state={{ from: from }}
             style={{
               color: '#4dabf7',
               fontWeight: '500',

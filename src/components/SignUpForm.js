@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FaUser, FaEnvelope, FaLock } from 'react-icons/fa';
 import { mockedLoginResponse } from '../services/ApiMock';
 
@@ -15,6 +15,10 @@ function SignUpForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Pega a rota de redirecionamento da localização ou usa a página inicial como padrão
+  const from = location.state?.from || '/';
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -91,8 +95,8 @@ function SignUpForm() {
       localStorage.setItem('isLoggedIn', 'true');
       localStorage.setItem('userData', JSON.stringify(data));
       
-      // Redireciona para a página principal após cadastro bem-sucedido
-      navigate('/');
+      // Redireciona para a rota original ou para a página inicial após cadastro bem-sucedido
+      navigate(from, { replace: true });
     } catch (error) {
       console.error('Erro no cadastro:', error);
       setSubmitError('Ocorreu um erro ao realizar o cadastro. Tente novamente.');

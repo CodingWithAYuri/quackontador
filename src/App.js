@@ -10,6 +10,7 @@ import SignUpForm from './components/SignUpForm';
 import Logout from './components/Logout';
 import TermosDeUso from './components/TermosDeUso';
 import PrivacyPolicy from './components/PrivacyPolicy';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
@@ -22,16 +23,28 @@ function App() {
         overflow: 'hidden'
       }}>
         <Routes>
-          {/* Rotas sem cabeçalho e sem rodapé */}
+          {/* Rotas públicas sem cabeçalho e sem rodapé */}
           <Route path="/login" element={<LoginForm />} />
           <Route path="/logout" element={<Logout />} />
           <Route path="/cadastro" element={<SignUpForm />} />
-          {/* Rotas com cabeçalho e rodapé */}
+          
+          {/* Rotas públicas com cabeçalho e rodapé */}
           <Route path="/" element={<WithHeaderAndFooter><Main /></WithHeaderAndFooter>} />
           <Route path="/contactForm" element={<WithHeaderAndFooter><ContactForm /></WithHeaderAndFooter>} />
-          <Route path="/calculos" element={<WithHeaderAndFooter><Calculadora /></WithHeaderAndFooter>} />
           <Route path="/termos-de-uso" element={<WithHeaderAndFooter><TermosDeUso /></WithHeaderAndFooter>} />
           <Route path="/politica-de-privacidade" element={<WithHeaderAndFooter><PrivacyPolicy /></WithHeaderAndFooter>} />
+          
+          {/* Rotas protegidas */}
+          <Route 
+            path="/calculos" 
+            element={
+              <WithHeaderAndFooter>
+                <ProtectedRoute>
+                  <Calculadora />
+                </ProtectedRoute>
+              </WithHeaderAndFooter>
+            } 
+          />
         </Routes>
       </div> 
     </HashRouter>  
