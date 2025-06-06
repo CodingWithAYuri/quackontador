@@ -152,7 +152,7 @@ function TermosDeUso() {
               <li className="mb-2" style={{ color: '#fff', fontSize: '1rem' }}><i className="bi bi-exclamation-octagon text-warning me-2"></i> Exatidão absoluta dos cálculos (variações legais podem ocorrer);</li>
               <li style={{ color: '#fff', fontSize: '1rem' }}><i className="bi bi-exclamation-octagon text-warning me-2"></i> Disponibilidade ininterrupta do site.</li>
             </ul>
-          </section>
+          </section>BU [;PB]
 
           {/* Seção 8 */}
           <section id="secao-8" className="mb-4" style={{ backgroundColor: '#333', color: '#fff' }}>
