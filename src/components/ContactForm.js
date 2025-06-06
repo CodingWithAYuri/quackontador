@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
-import { Form, FormGroup, FormControl, Button, InputGroup, FormCheck, Alert } from 'react-bootstrap';
-import { Person, Envelope, ChatLeftText, Check2Circle } from 'react-bootstrap-icons';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Form, FormGroup, FormControl, Button, InputGroup, FormCheck, Alert, Modal } from 'react-bootstrap';
+import { Person, Envelope, ChatLeftText, EnvelopeCheckFill, X } from 'react-bootstrap-icons'; // Ícones atualizados
+import { Link, useNavigate } from 'react-router-dom';
+import { useUserEmail } from '../hooks/useUserEmail';
 
 const ContactForm = () => {
+  const { name: userName, email: userEmail } = useUserEmail();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -12,7 +15,28 @@ const ContactForm = () => {
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState(null);
+  const [submitStatus, setSubmitStatus] = useState({ 
+    type: null, 
+    message: '',
+    show: false
+  });
+  
+  // Fecha o modal e redireciona
+  const handleClose = () => {
+    setSubmitStatus({ ...submitStatus, show: false });
+    navigate('/');
+  };
+
+  // Preenche automaticamente os campos se o usuário estiver logado
+  useEffect(() => {
+    if (userName || userEmail) {
+      setFormData(prev => ({
+        ...prev,
+        name: userName || prev.name,
+        email: userEmail || prev.email
+      }));
+    }
+  }, [userName, userEmail]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -75,11 +99,32 @@ const ContactForm = () => {
       // Aqui você implementaria o envio real do formulário
       console.log('Dados do formulário:', formData);
       
-      setSubmitStatus('success');
-      setFormData({ name: '', email: '', message: '', agree: false });
+      // Limpa o formulário após o envio
+      setFormData({
+        name: userName || '',
+        email: userEmail || '',
+        message: '',
+        agree: false
+      });
+      
+      // Mostra o modal de sucesso
+      setSubmitStatus({ 
+        type: 'success', 
+        message: 'Sua mensagem foi enviada com sucesso!',
+        show: true
+      });
+      
+      // Fecha o modal e redireciona após 3 segundos
+      setTimeout(() => {
+        handleClose();
+      }, 3000);
+      
     } catch (error) {
-      console.error('Erro ao enviar o formulário:', error);
-      setSubmitStatus('error');
+      console.error('Erro ao enviar mensagem:', error);
+      setSubmitStatus({ 
+        type: 'error', 
+        message: 'Ocorreu um erro ao enviar sua mensagem. Por favor, tente novamente mais tarde.' 
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -274,6 +319,36 @@ const ContactForm = () => {
 
   return (
     <div style={styles.pageContainer}>
+      {/* Modal de Sucesso */}
+      <Modal 
+        show={submitStatus.show && submitStatus.type === 'success'} 
+        onHide={handleClose}
+        centered
+        dialogClassName="modal-success"
+        contentClassName="bg-dark text-white"
+      >
+        <Modal.Body className="p-4">
+          <div className="d-flex justify-content-end position-absolute" style={{ top: '10px', right: '10px' }}>
+            <Button 
+              variant="link" 
+              onClick={handleClose} 
+              className="p-0"
+              aria-label="Fechar"
+            >
+              <X size={20} />
+            </Button>
+          </div>
+          <div className="d-flex flex-column align-items-center">
+            <EnvelopeCheckFill size={56} className="text-success mb-3" />
+            <h4 className="mb-3">Mensagem Enviada!</h4>
+            <p className="mb-2">{submitStatus.message}</p>
+            <p className="text-muted small mt-2">
+              <i>Você será redirecionado em instantes...</i>
+            </p>
+          </div>
+        </Modal.Body>
+      </Modal>
+
       <div style={styles.contentContainer}>
         <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
           <div className="d-flex justify-content-center">
@@ -291,16 +366,13 @@ const ContactForm = () => {
             <h2 style={{ fontSize: '1.4rem', margin: '0.5rem 0', color: '#fff' }}>Fale Conosco</h2>
           <p style={{ fontSize: '0.9rem', margin: '0 0 0.5rem 0', opacity: 0.9, color: '#fff', fontStyle: 'italic'}}>Tem alguma dúvida ou sugestão?</p>
           
-          {submitStatus === 'success' && (
-            <Alert variant="success" className="text-start">
-              <Check2Circle className="me-2" />
-              Mensagem enviada com sucesso!
-            </Alert>
-          )}
-          
-          {submitStatus === 'error' && (
-            <Alert variant="danger" className="text-start">
-              Ocorreu um erro ao enviar sua mensagem. Por favor, tente novamente mais tarde.
+          {submitStatus.type === 'error' && (
+            <Alert variant="danger" className="text-start d-flex align-items-center">
+              <i className="bi bi-exclamation-triangle me-2"></i>
+              <div>
+                <strong>Erro!</strong>
+                <div className="small">{submitStatus.message}</div>
+              </div>
             </Alert>
           )}
           
@@ -320,6 +392,8 @@ const ContactForm = () => {
                   value={formData.name}
                   onChange={handleChange}
                   isInvalid={!!errors.name}
+                  disabled={!!userName}
+                  className={userName ? 'bg-light' : ''}
                   style={styles.input}
                 />
               </InputGroup>
@@ -340,6 +414,8 @@ const ContactForm = () => {
                   value={formData.email}
                   onChange={handleChange}
                   isInvalid={!!errors.email}
+                  disabled={!!userEmail}
+                  className={userEmail ? 'bg-light' : ''}
                   style={styles.input}
                 />
               </InputGroup>
@@ -427,5 +503,56 @@ const ContactForm = () => {
     </div>
   );
 };
+
+// Estilos adicionais para o modal
+const modalStyles = `
+  .modal-success .modal-content {
+    border: none;
+    border-radius: 8px;
+    background-color: #333;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .modal-success .modal-body {
+    padding: 2rem;
+    text-align: center;
+  }
+  
+  .modal-success .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+    opacity: 0.7;
+  }
+  
+  .modal-success .btn-close:hover {
+    opacity: 1;
+  }
+  
+  .modal-success h4 {
+    color: #fff;
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+  
+  .modal-success p {
+    color: #ddd;
+    margin-bottom: 0.5rem;
+  }
+  
+  .modal-success .text-muted {
+    color: #aaa !important;
+    font-size: 0.85rem;
+  }
+  
+  .modal-success .text-success {
+    color: #4CAF50 !important;
+  }
+`;
+
+// Adiciona os estilos ao head do documento
+const styleElement = document.createElement('style');
+styleElement.textContent = modalStyles;
+document.head.appendChild(styleElement);
 
 export default ContactForm;
