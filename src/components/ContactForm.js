@@ -90,51 +90,51 @@ const ContactForm = () => {
     pageContainer: {
       display: 'flex',
       flexDirection: 'column',
-      width: '100%',
-      padding: '1rem 0.74rem',
-      boxSizing: 'border-box',
+      minHeight: 'calc(100vh - 120px)', // Altura total menos o header e footer
       backgroundColor: '#333',
-      flex: '0 0 auto',
-      minHeight: 'auto'
+      padding: '1rem 0.5rem',
+      boxSizing: 'border-box',
+      margin: 0,
+      width: '100%',
+      position: 'relative',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: '0.875rem'
     },
     contentContainer: {
       width: '100%',
-      maxWidth: '488px',
-      margin: '0 auto',
+      maxWidth: '480px',
+      margin: '1rem auto',
       padding: '1.5rem',
-      boxSizing: 'border-box',
-      backgroundColor: '#333',
-      borderRadius: '8px',
-      boxShadow: '0 0 15px rgba(221, 104, 104, 0.23)',
-      marginTop: '0.5rem', // Aproximei mais do header
-      flex: '0 0 auto',
       display: 'flex',
       flexDirection: 'column',
-      overflowY: 'auto',
-      scrollbarWidth: 'thin',
-      scrollbarColor: '#6c757d #333'
+      flex: '0 1 auto',
+      backgroundColor: '#333',
+      borderRadius: '8px',
+      boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)',
+      border: '1px solid rgba(255, 255, 255, 0.4)'
     },
     formContainer: {
       width: '100%',
       maxWidth: '100%',
       margin: '0',
-      padding: '0.56rem 1.13rem', // Increased padding by additional 20%
+      padding: '0.5rem 0.8rem',
       boxSizing: 'border-box',
       display: 'flex',
       flexDirection: 'column',
-      gap: '0.56rem', // Increased gap by additional 20%
+      gap: '0.4rem',
       backgroundColor: '#333',
-      borderRadius: '8px',
-      boxShadow: '0 0 15px rgba(221, 104, 104, 0.23)',
-      border: '2px solid rgba(255, 255, 255, 0.6)',
-      outline: '1px solid rgba(255, 255, 255, 0.45)',
-      outlineOffset: '2px',
+      borderRadius: '6px',
+      boxShadow: '0 0 10px rgba(221, 104, 104, 0.2)',
+      border: '1px solid rgba(255, 255, 255, 0.4)',
+      outline: '1px solid rgba(255, 255, 255, 0.3)',
+      outlineOffset: '1px',
       WebkitFontSmoothing: 'antialiased',
       MozOsxFontSmoothing: 'grayscale',
       backfaceVisibility: 'hidden',
       color: '#fff',
       position: 'relative',
-      overflow: 'hidden'
+      opacity: '0.8'
     },
     icon: {
       marginRight: '0.3rem',
@@ -153,11 +153,11 @@ const ContactForm = () => {
     },
     input: {
       width: '100%',
-      padding: '0.8rem 1rem',
+      padding: '0.5rem 0.8rem',
       border: '1px solid #555',
-      borderRadius: '6px',
-      fontSize: '1rem',
-      lineHeight: '1.5',
+      borderRadius: '4px',
+      fontSize: '0.9rem',
+      lineHeight: '1.4',
       backgroundColor: '#fff',
       color: '#333',
       transition: 'all 0.2s ease-in-out',
@@ -173,17 +173,16 @@ const ContactForm = () => {
     },
     textarea: {
       width: '100%',
-      padding: '1rem',
+      padding: '0.8rem',
       border: '1px solid #555',
-      borderRadius: '6px',
-      fontSize: '1.05rem',
-      lineHeight: '1.6',
-      margin: '0.5rem 0',
-      minHeight: '200px', // Aumentei a altura mínima
-      maxHeight: '400px', // Aumentei a altura máxima
+      borderRadius: '4px',
+      fontSize: '0.9rem',
+      lineHeight: '1.5',
+      margin: '0',
+      minHeight: '120px',
+      maxHeight: '220px',
       resize: 'vertical',
       boxSizing: 'border-box',
-      transition: 'all 0.2s ease-in-out',
       backgroundColor: '#fff',
       color: '#333',
       transition: 'all 0.2s ease-in-out',
@@ -207,26 +206,27 @@ const ContactForm = () => {
     },
     error: {
       color: '#ff6b6b',
-      fontSize: '0.9rem', // Increased from 0.85rem (additional 20%)
-      marginTop: '0.3rem', // Increased margin by additional 20%
+      fontSize: '0.9rem',
+      marginTop: '0.3rem',
       minHeight: '1rem',
       lineHeight: '1.1'
     },
     button: {
       backgroundColor: 'transparent',
       color: 'white',
-      padding: '0.3rem 0.5rem', // Reduced padding
+      padding: '0.5rem 1.5rem',
       border: '1px solid rgba(255, 255, 255, 0.5)',
-      borderRadius: '4px', // Smaller border radius
-      fontSize: '1rem', // Increased font size by additional ~20%
+      borderRadius: '4px',
+      fontSize: '0.9rem',
       fontWeight: '400',
       cursor: 'pointer',
       transition: 'all 0.2s ease-in-out',
       textTransform: 'none',
       letterSpacing: 'normal',
-      marginTop: '0.8rem',
+      marginTop: '1rem',
       whiteSpace: 'nowrap',
       display: 'inline-block',
+      alignSelf: 'flex-start',
       '&:hover': {
         backgroundColor: 'rgba(255, 255, 255, 0.1)',
         borderColor: 'rgba(255, 255, 255, 0.8)',
