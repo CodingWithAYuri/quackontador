@@ -1,19 +1,22 @@
 import { useState, useEffect } from "react";
 
 export const useUserEmail = () => {
-  const [email, setEmail] = useState(null);
+  const [userData, setUserData] = useState({ email: null, name: null });
 
   useEffect(() => {
-    const userData = localStorage.getItem('userData');
-    if (userData) {
+    const userDataStr = localStorage.getItem('userData');
+    if (userDataStr) {
       try {
-        const parsedData = JSON.parse(userData);
-        setEmail(parsedData?.user?.email || null); // Usando optional chaining
+        const parsedData = JSON.parse(userDataStr);
+        setUserData({
+          email: parsedData?.user?.email || null,
+          name: parsedData?.user?.name || null
+        });
       } catch (error) {
         console.error("Error parsing userData:", error);
       }
     }
   }, []);
 
-  return email;
+  return userData;
 };

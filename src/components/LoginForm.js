@@ -22,9 +22,27 @@ function LoginForm() {
     setIsLoading(true);
     
     try {
-      // Simulando chamada à API
+      // Simulando verificação de usuário cadastrado
       await new Promise(resolve => setTimeout(resolve, 1000));
-      const data = mockedLoginResponse();
+      
+      // Verifica se existe um usuário cadastrado com este email
+      const userDataStr = localStorage.getItem('userData');
+      let userData = null;
+      
+      try {
+        userData = userDataStr ? JSON.parse(userDataStr) : null;
+      } catch (e) {
+        console.error('Erro ao analisar dados do usuário:', e);
+      }
+      
+      if (!userData || !userData.user || userData.user.email.toLowerCase() !== email.toLowerCase()) {
+        setError('Usuário não cadastrado. Por favor, faça seu cadastro primeiro.');
+        setIsLoading(false);
+        return;
+      }
+      
+      // Se chegou aqui, o usuário está cadastrado, então faz o login
+      const data = mockedLoginResponse(email, userData.user.name || 'Usuário');
       
       localStorage.setItem('isLoggedIn', 'true');
       localStorage.setItem('userData', JSON.stringify(data));
@@ -182,8 +200,13 @@ function LoginForm() {
         </div>
         <h1 style={styles.title}>Acesso à Conta</h1>
         
-        {error && <div style={styles.error}>{error}</div>}
-        
+        {error && (
+          <div style={styles.error}>
+            {error.includes('não cadastrado') 
+              ? 'Usuário não cadastrado. Por favor, faça seu cadastro primeiro.' 
+              : error}
+          </div>
+        )}
         <form onSubmit={handleLogin} style={{ marginBottom: '1.5rem' }}>
           <div style={styles.inputGroup}>
             <FaUserCircle style={styles.icon} />
@@ -230,8 +253,8 @@ function LoginForm() {
           </div>
         </form>
         
-        <div style={{ textAlign: 'center', marginTop: '1rem', color: '#fff' }}>
-          <span>Não tem uma conta? </span>
+        <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+          <span style={{ color: '#fff' }}>Não tem uma conta? </span>
           <Link 
             to="/cadastro" 
             style={{
@@ -245,6 +268,7 @@ function LoginForm() {
           >
             Cadastre-se
           </Link>
+
         </div>
       </div>
     </div>

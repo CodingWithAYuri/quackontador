@@ -6,7 +6,7 @@ import Avatar from "./Avatar";
 import { IMAGE_PATHS } from "../constants/paths";
 
 const Header = () => {
-  const email = useUserEmail();
+  const { email, name } = useUserEmail();
 
   return (
     <header className="masthead masthead-nav">
@@ -28,7 +28,7 @@ const Header = () => {
           {/* Menu Avatar */}
           <Navbar.Collapse id="navbarNav" className="justify-content-end">
             <Nav className="align-items-center">
-              <p className="mb-0 me-2">{email ? `Olá, ${email}` : "Não logado"}</p>
+              <p className="mb-0 me-2">{name ? `Olá, ${name}` : email ? `Olá, ${email}` : "Não logado"}</p>
               <Dropdown>
                 <Dropdown.Toggle 
                   variant="" 
@@ -49,7 +49,7 @@ const Header = () => {
                   {email ? (
                     <Dropdown.Item as={Link} to="/logout" className="disable-dropdown-item-color">
                       <i className="fas fa-sign-out-alt" />
-                      <span className="ms-2">Logout</span>
+                      <span className="ms-2">Sair</span>
                     </Dropdown.Item>
                   ) : (
                     <Dropdown.Item as={Link} to="/login" className="disable-dropdown-item-color">

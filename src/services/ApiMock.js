@@ -1,4 +1,4 @@
-export function mockedLoginResponse() {
+export function mockedLoginResponse(email = 'user@example.com', name = 'Usuário') {
     return {
         "success": true,
         "session": {
@@ -6,7 +6,8 @@ export function mockedLoginResponse() {
         },
         "user": {
             "id": "1",
-            "email": "user@example.com"
+            "email": email,
+            "name": name
         }
     }
 }
