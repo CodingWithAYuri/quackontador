@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Button, Form, Row, Col, Table } from 'react-bootstrap';
+import { Container, Button, Form, Row, Col, Table } from 'react-bootstrap';  // Removendo Dropdown não utilizado
 import { calcularInssClt, calcularIrClt, calcularInssAutonomo } from '../components/Calculos';
 
 const formatarMoeda = (valor) => {
@@ -30,6 +30,7 @@ const Calculadora = () => {
 
   const [salario, setSalario] = useState('');
   const [ano, setAno] = useState(2025);
+
   const [resultados, setResultados] = useState(null);
 
   const handleSubmit = (e) => {
@@ -189,26 +190,36 @@ const Calculadora = () => {
                   <div className="d-flex align-items-center justify-content-center mb-2">
                     <label htmlFor="ano" className="text-white mb-0" style={{ fontSize: '1.1rem' }}>Ano</label>
                   </div>
-                  <select
-                    id="ano"
-                    value={ano}
-                    onChange={(e) => setAno(parseInt(e.target.value))}
-                    style={{
-                      height: '48px',
-                      fontSize: '1.1rem',
-                      borderRadius: '8px',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                      color: 'black',
-                      backgroundColor: 'white',
-                      padding: '0 5px',
-                      WebkitAppearance: 'none',
-                      MozAppearance: 'none',
-                      appearance: 'none'
-                    }}
-                  >
-                    <option value={2025} style={{ textAlign: 'center', backgroundColor: 'white !important' }}>2025</option>
-                    <option value={2024} style={{ textAlign: 'center', backgroundColor: 'white !important' }}>2024</option>
-                  </select>
+                  <div className="position-relative" style={{ width: '100%' }}>
+                    <select
+                      id="ano"
+                      value={ano}
+                      onChange={(e) => setAno(parseInt(e.target.value))}
+                      className="form-select text-center"
+                      style={{
+                        height: '48px',
+                        fontSize: '1.1rem',
+                        borderRadius: '8px',
+                        border: '1px solid rgba(0, 0, 0, 0.2)',
+                        color: 'black',
+                        backgroundColor: 'white',
+                        padding: '0 20px',
+                        textAlignLast: 'center',
+                        WebkitAppearance: 'none',
+                        MozAppearance: 'none',
+                        appearance: 'none',
+                        backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e")',
+                        backgroundRepeat: 'no-repeat',
+                        backgroundPosition: 'right 0.7em top 50%',
+                        backgroundSize: '1.2em',
+                        paddingRight: '2.5em',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <option value={2025}>2025</option>
+                      <option value={2024}>2024</option>
+                    </select>
+                  </div>
                 </div>
               </Col>
             </Row>
