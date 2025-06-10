@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FaUser, FaEnvelope, FaLock } from 'react-icons/fa';
-import { mockedLoginResponse } from '../services/ApiMock';
+// Importação removida pois não é mais necessária
 
 function SignUpForm() {
   const [formData, setFormData] = useState({
@@ -90,8 +90,37 @@ function SignUpForm() {
       // Simulando chamada à API de cadastro
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Simulando login após cadastro bem-sucedido
-      const data = mockedLoginResponse(formData.email, formData.name);
+      // Salva o novo usuário na lista de usuários
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      console.log('Usuários antes do cadastro:', users);
+      
+      const newUser = {
+        id: Date.now().toString(),
+        name: formData.name,
+        email: formData.email,
+        password: formData.password // Em uma aplicação real, isso deve ser uma hash
+      };
+      
+      users.push(newUser);
+      console.log('Novo usuário a ser salvo:', newUser);
+      
+      localStorage.setItem('users', JSON.stringify(users));
+      
+      // Verifica se o usuário foi salvo corretamente
+      const usersAfterSave = JSON.parse(localStorage.getItem('users') || '[]');
+      console.log('Usuários após salvar:', usersAfterSave);
+      
+      // Cria a sessão de login
+      const data = {
+        success: true,
+        session: { id: Date.now().toString() },
+        user: {
+          id: newUser.id,
+          email: newUser.email,
+          name: newUser.name
+        }
+      };
+      
       localStorage.setItem('isLoggedIn', 'true');
       localStorage.setItem('userData', JSON.stringify(data));
       

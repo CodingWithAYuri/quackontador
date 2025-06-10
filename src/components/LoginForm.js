@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { mockedLoginResponse } from '../services/ApiMock';
+// Importação removida pois não é mais necessária
 import { FaUserCircle, FaLock } from 'react-icons/fa';
 
 function LoginForm() {
@@ -29,30 +29,46 @@ function LoginForm() {
       // Simulando verificação de usuário cadastrado
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Verifica se existe um usuário cadastrado com este email
-      const userDataStr = localStorage.getItem('userData');
-      let userData = null;
+      // Verifica se existe um usuário cadastrado com este email e senha
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      console.log('Usuários cadastrados:', users);
       
-      try {
-        userData = userDataStr ? JSON.parse(userDataStr) : null;
-      } catch (e) {
-        console.error('Erro ao analisar dados do usuário:', e);
-      }
+      const user = users.find(u => {
+        console.log('Comparando:', {
+          emailDigitado: email.toLowerCase(),
+          emailCadastrado: u.email.toLowerCase(),
+          senhaDigitada: password,
+          senhaCadastrada: u.password,
+          emailIgual: u.email.toLowerCase() === email.toLowerCase(),
+          senhaIgual: u.password === password
+        });
+        return u.email.toLowerCase() === email.toLowerCase() && u.password === password;
+      });
       
-      if (!userData || !userData.user || userData.user.email.toLowerCase() !== email.toLowerCase()) {
-        setError('Usuário não cadastrado. Por favor, faça seu cadastro primeiro.');
+      console.log('Usuário encontrado:', user);
+      
+      if (!user) {
+        setError('Email ou senha incorretos. Por favor, verifique suas credenciais.');
         setIsLoading(false);
         return;
       }
       
-      // Se chegou aqui, o usuário está cadastrado, então faz o login
-      const data = mockedLoginResponse(email, userData.user.name || 'Usuário');
+      // Se chegou aqui, o usuário está cadastrado e a senha está correta, então faz o login
+      const data = {
+        success: true,
+        session: { id: Date.now().toString() },
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name
+        }
+      };
       
       localStorage.setItem('isLoggedIn', 'true');
       localStorage.setItem('userData', JSON.stringify(data));
       
-      // Redireciona para a rota original ou para a página inicial
-      navigate(from, { replace: true });
+      // Redireciona sempre para a página inicial após o login
+      navigate('/', { replace: true });
     } catch (err) {
       console.error('Login failed:', err);
       setError('Falha no login. Verifique suas credenciais.');

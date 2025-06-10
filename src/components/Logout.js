@@ -11,7 +11,9 @@ function Logout() {
   useEffect(() => {
     async function handleLogout() {
       await serverLogout();
-      localStorage.clear();
+      // Remove apenas os itens de sessão, mantendo os usuários cadastrados
+      localStorage.removeItem('isLoggedIn');
+      localStorage.removeItem('userData');
       navigate('/');
     }
 
