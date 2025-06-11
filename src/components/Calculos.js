@@ -27,22 +27,32 @@ export const calcularIrClt = (salario, ano) => {
 };
 
 export const calcularInssAutonomo = (salario, ano) => {
+  // Valores fixos para o teto do INSS por ano
+  const tetoInss = {
+    2024: 7786.02,
+    2025: 8157.41
+  };
+
   const salarioMinimo = salariosMinimos[ano];
-  if (!salarioMinimo) {
-    throw new Error(`Salário mínimo não definido para o ano ${ano}`);
+  const teto = tetoInss[ano];
+  
+  if (!salarioMinimo || !teto) {
+    throw new Error(`Parâmetros não definidos para o ano ${ano}`);
   }
 
-  const contribuicaoMinima = salarioMinimo * 0.2; // Corrigido: usar salarioMinimo
-  const contribuicaoMaxima = salarioMinimo * 11; // Corrigido: usar salarioMinimo
+  // Calcula 20% do salário bruto
   const contribuicao = salario * 0.2;
-
-  if (salario <= salarioMinimo) { // Corrigido: usar salarioMinimo
-    return contribuicaoMinima.toFixed(2);
+  
+  // Se o salário for menor ou igual ao salário mínimo, retorna a contribuição mínima
+  if (salario <= salarioMinimo) {
+    return (salarioMinimo * 0.2).toFixed(2);
   }
-
-  if (salario >= contribuicaoMaxima) {
-    return contribuicaoMaxima.toFixed(2);
+  
+  // Se o salário for maior que o teto do INSS, retorna a contribuição máxima
+  if (salario > teto) {
+    return (teto * 0.2).toFixed(2);
   }
-
+  
+  // Caso contrário, retorna 20% do salário
   return contribuicao.toFixed(2);
 };
