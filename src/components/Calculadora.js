@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Button, Form, Row, Col, Table } from 'react-bootstrap';
 import { Printer } from 'react-bootstrap-icons';
+import { useNavigate } from 'react-router-dom';
 import { calcularInssClt, calcularIrClt, calcularInssAutonomo } from '../components/Calculos';
 
 const formatarMoeda = (valor) => {
@@ -33,9 +34,25 @@ const Calculadora = () => {
   const [erro, setErro] = useState('');
   const [resultados, setResultados] = useState(null);
   
+  const navigate = useNavigate();
+
   const handleImprimirGuia = (tipo) => {
-    console.log(`Imprimir guia de ${tipo}`);
-    // Aqui você pode adicionar a lógica para imprimir ou gerar o PDF da guia
+    if (tipo === 'GPS') {
+      // Navega para a rota do GuiaGPS passando o valor do INSS
+      // Remove pontos de milhar e substitui vírgula por ponto para garantir um número válido
+      const valorInss = resultados?.inssAutonomo 
+        ? resultados.inssAutonomo.replace(/\./g, '').replace(',', '.')
+        : '0.00';
+        
+      navigate('/guia-gps', { 
+        state: { 
+          valorInss: valorInss
+        } 
+      });
+    } else if (tipo === 'DARF') {
+      // Lógica para DARF (pode ser implementada posteriormente)
+      console.log('Gerar DARF');
+    }
   };
 
   const handleSubmit = (e) => {
@@ -165,39 +182,36 @@ const Calculadora = () => {
                         fontWeight: '600', 
                         fontSize: '1.1rem', 
                         color: '#212529',
-                        borderRight: '1px solid #dee2e6'
+                        borderRight: '1px solid #dee2e6',
+                        verticalAlign: 'middle'
                       }}>INSS</th>
                       <td className="valor text-right pe-4" style={{ 
                         fontSize: '1.1rem',
-                        borderRight: '1px solid #dee2e6'
+                        borderRight: '1px solid #dee2e6',
+                        verticalAlign: 'middle'
                       }}>{resultados.inssClt}</td>
                       <td className="valor text-right pe-4" style={{ 
                         fontSize: '1.1rem',
-                        borderRight: '1px solid #dee2e6'
-                      }}>{resultados.inssAutonomo}</td>
-                      <td style={{ 
-                        padding: '0.5rem 0.5rem 1rem 0.5rem',
-                        width: '60px',
-                        textAlign: 'center',
-                        verticalAlign: 'middle',
                         borderRight: '1px solid #dee2e6',
-                        position: 'relative'
+                        verticalAlign: 'middle'
                       }}>
-                        <Button 
-                          variant="link" 
-                          className="p-0 d-inline-flex align-items-center justify-content-center"
-                          onClick={() => handleImprimirGuia('GPS')}
-                          title="Imprimir GPS"
-                          style={{ 
-                            width: '32px',
-                            height: '32px',
-                            padding: '0.25rem',
-                            position: 'relative',
-                            top: '8px'
-                          }}
-                        >
-                          <Printer className="text-primary" style={{ fontSize: '1.1rem' }} />
-                        </Button>
+                        <div className="d-flex align-items-center justify-content-end">
+                          <span className="me-2">{resultados.inssAutonomo}</span>
+                          <Button 
+                            variant="link" 
+                            className="p-0 d-inline-flex align-items-center justify-content-center"
+                            onClick={() => handleImprimirGuia('GPS')}
+                            title="Imprimir GPS"
+                            style={{ 
+                              width: '32px',
+                              height: '32px',
+                              padding: '0.25rem',
+                              flexShrink: 0
+                            }}
+                          >
+                            <Printer className="text-primary" style={{ fontSize: '1.1rem' }} />
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                     <tr style={{ background: '#f9f9f9' }}>
@@ -205,39 +219,36 @@ const Calculadora = () => {
                         fontWeight: '600', 
                         fontSize: '1.1rem', 
                         color: '#212529',
-                        borderRight: '1px solid #dee2e6'
+                        borderRight: '1px solid #dee2e6',
+                        verticalAlign: 'middle'
                       }}>IR</th>
                       <td className="valor text-right pe-4" style={{ 
                         fontSize: '1.1rem',
-                        borderRight: '1px solid #dee2e6'
+                        borderRight: '1px solid #dee2e6',
+                        verticalAlign: 'middle'
                       }}>{resultados.irClt}</td>
                       <td className="valor text-right pe-4" style={{ 
                         fontSize: '1.1rem',
-                        borderRight: '1px solid #dee2e6'
-                      }}>{resultados.irClt}</td>
-                      <td style={{ 
-                        padding: '0.5rem 0.5rem 1rem 0.5rem',
-                        width: '60px',
-                        textAlign: 'center',
-                        verticalAlign: 'middle',
                         borderRight: '1px solid #dee2e6',
-                        position: 'relative'
+                        verticalAlign: 'middle'
                       }}>
-                        <Button 
-                          variant="link" 
-                          className="p-0 d-inline-flex align-items-center justify-content-center"
-                          onClick={() => handleImprimirGuia('DARF')}
-                          title="Imprimir DARF"
-                          style={{ 
-                            width: '32px',
-                            height: '32px',
-                            padding: '0.25rem',
-                            position: 'relative',
-                            top: '8px'
-                          }}
-                        >
-                          <Printer className="text-primary" style={{ fontSize: '1.1rem' }} />
-                        </Button>
+                        <div className="d-flex align-items-center justify-content-end">
+                          <span className="me-2">{resultados.irClt}</span>
+                          <Button 
+                            variant="link" 
+                            className="p-0 d-inline-flex align-items-center justify-content-center"
+                            onClick={() => handleImprimirGuia('DARF')}
+                            title="Imprimir DARF"
+                            style={{ 
+                              width: '32px',
+                              height: '32px',
+                              padding: '0.25rem',
+                              flexShrink: 0
+                            }}
+                          >
+                            <Printer className="text-primary" style={{ fontSize: '1.1rem' }} />
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                     <tr style={{ background: '#ffffff', borderTop: '2px solid #dee2e6' }}>

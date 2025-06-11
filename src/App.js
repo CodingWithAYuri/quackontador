@@ -11,6 +11,7 @@ import Logout from './components/Logout';
 import TermosDeUso from './components/TermosDeUso';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import ProtectedRoute from './components/ProtectedRoute';
+import GuiaGPS from './components/GuiaGPS';
 
 function App() {
   return (
@@ -41,6 +42,16 @@ function App() {
               <WithHeaderAndFooter>
                 <ProtectedRoute>
                   <Calculadora />
+                </ProtectedRoute>
+              </WithHeaderAndFooter>
+            } 
+          />
+          <Route 
+            path="/guia-gps" 
+            element={
+              <WithHeaderAndFooter>
+                <ProtectedRoute>
+                  <GuiaGPS />
                 </ProtectedRoute>
               </WithHeaderAndFooter>
             } 
