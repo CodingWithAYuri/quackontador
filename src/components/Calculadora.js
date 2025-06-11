@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Button, Form, Row, Col, Table } from 'react-bootstrap';  // Removendo Dropdown não utilizado
+import { Container, Button, Form, Row, Col, Table } from 'react-bootstrap';
+import { Printer } from 'react-bootstrap-icons';
 import { calcularInssClt, calcularIrClt, calcularInssAutonomo } from '../components/Calculos';
 
 const formatarMoeda = (valor) => {
@@ -9,7 +10,6 @@ const formatarMoeda = (valor) => {
     maximumFractionDigits: 2
   }).format(valor);
 };
-
 
 const Calculadora = () => {
   useEffect(() => {
@@ -32,6 +32,11 @@ const Calculadora = () => {
   const [ano, setAno] = useState(2025);
   const [erro, setErro] = useState('');
   const [resultados, setResultados] = useState(null);
+  
+  const handleImprimirGuia = (tipo) => {
+    console.log(`Imprimir guia de ${tipo}`);
+    // Aqui você pode adicionar a lógica para imprimir ou gerar o PDF da guia
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -96,8 +101,6 @@ const Calculadora = () => {
         )}
         {resultados ? (
           <div className="mx-auto" style={{ maxWidth: '600px' }}>
-
-
             <div style={{
               border: '1px solid rgba(255, 255, 255, 0.2)',
               borderRadius: '12px',
@@ -131,37 +134,134 @@ const Calculadora = () => {
                         background: 'transparent',
                         fontWeight: '600',
                         fontSize: '1.1rem',
-                        color: '#212529'
+                        color: '#212529',
+                        borderRight: '1px solid #dee2e6'
                       }}></th>
                       <th className="text-center py-3 px-4" style={{
                         background: 'transparent',
                         fontWeight: '600',
                         fontSize: '1.1rem',
-                        color: '#212529'
+                        color: '#212529',
+                        borderRight: '1px solid #dee2e6'
                       }}>CLT</th>
-                      <th className="text-center py-3 px-4" style={{
-                        background: 'transparent',
-                        fontWeight: '600',
-                        fontSize: '1.1rem',
-                        color: '#212529'
-                      }}>Autônomo</th>
+                      <th 
+                        colSpan="2"
+                        className="text-center py-3 px-4" 
+                        style={{
+                          background: 'transparent',
+                          fontWeight: '600',
+                          fontSize: '1.1rem',
+                          color: '#212529',
+                          borderRight: '1px solid #dee2e6'
+                        }}
+                      >
+                        Autônomo
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr style={{ background: '#ffffff' }}>
-                      <th className="text-center py-3 px-4" style={{ fontWeight: '600', fontSize: '1.1rem', color: '#212529' }}>INSS</th>
-                      <td className="valor" style={{ fontSize: '1.1rem' }}>{resultados.inssClt}</td>
-                      <td className="valor" style={{ fontSize: '1.1rem' }}>{resultados.inssAutonomo}</td>
+                      <th className="text-center py-3 px-4" style={{ 
+                        fontWeight: '600', 
+                        fontSize: '1.1rem', 
+                        color: '#212529',
+                        borderRight: '1px solid #dee2e6'
+                      }}>INSS</th>
+                      <td className="valor text-right pe-4" style={{ 
+                        fontSize: '1.1rem',
+                        borderRight: '1px solid #dee2e6'
+                      }}>{resultados.inssClt}</td>
+                      <td className="valor text-right pe-4" style={{ 
+                        fontSize: '1.1rem',
+                        borderRight: '1px solid #dee2e6'
+                      }}>{resultados.inssAutonomo}</td>
+                      <td style={{ 
+                        padding: '0.5rem 0.5rem 1rem 0.5rem',
+                        width: '60px',
+                        textAlign: 'center',
+                        verticalAlign: 'middle',
+                        borderRight: '1px solid #dee2e6',
+                        position: 'relative'
+                      }}>
+                        <Button 
+                          variant="link" 
+                          className="p-0 d-inline-flex align-items-center justify-content-center"
+                          onClick={() => handleImprimirGuia('GPS')}
+                          title="Imprimir GPS"
+                          style={{ 
+                            width: '32px',
+                            height: '32px',
+                            padding: '0.25rem',
+                            position: 'relative',
+                            top: '8px'
+                          }}
+                        >
+                          <Printer className="text-primary" style={{ fontSize: '1.1rem' }} />
+                        </Button>
+                      </td>
                     </tr>
                     <tr style={{ background: '#f9f9f9' }}>
-                      <th className="text-center py-3 px-4" style={{ fontWeight: '600', fontSize: '1.1rem', color: '#212529' }}>IR</th>
-                      <td className="valor" style={{ fontSize: '1.1rem' }}>{resultados.irClt}</td>
-                      <td className="valor" style={{ fontSize: '1.1rem' }}>{resultados.irClt}</td>
+                      <th className="text-center py-3 px-4" style={{ 
+                        fontWeight: '600', 
+                        fontSize: '1.1rem', 
+                        color: '#212529',
+                        borderRight: '1px solid #dee2e6'
+                      }}>IR</th>
+                      <td className="valor text-right pe-4" style={{ 
+                        fontSize: '1.1rem',
+                        borderRight: '1px solid #dee2e6'
+                      }}>{resultados.irClt}</td>
+                      <td className="valor text-right pe-4" style={{ 
+                        fontSize: '1.1rem',
+                        borderRight: '1px solid #dee2e6'
+                      }}>{resultados.irClt}</td>
+                      <td style={{ 
+                        padding: '0.5rem 0.5rem 1rem 0.5rem',
+                        width: '60px',
+                        textAlign: 'center',
+                        verticalAlign: 'middle',
+                        borderRight: '1px solid #dee2e6',
+                        position: 'relative'
+                      }}>
+                        <Button 
+                          variant="link" 
+                          className="p-0 d-inline-flex align-items-center justify-content-center"
+                          onClick={() => handleImprimirGuia('DARF')}
+                          title="Imprimir DARF"
+                          style={{ 
+                            width: '32px',
+                            height: '32px',
+                            padding: '0.25rem',
+                            position: 'relative',
+                            top: '8px'
+                          }}
+                        >
+                          <Printer className="text-primary" style={{ fontSize: '1.1rem' }} />
+                        </Button>
+                      </td>
                     </tr>
                     <tr style={{ background: '#ffffff', borderTop: '2px solid #dee2e6' }}>
-                      <th className="text-center py-3 px-4" style={{ fontWeight: '600', fontSize: '1.1rem', color: '#212529' }}>Salário Líquido</th>
-                      <td className="valor total" style={{ fontSize: '1.1rem' }}>{resultados.salarioLiquidoClt}</td>
-                      <td className="valor total" style={{ fontSize: '1.1rem' }}>{resultados.salarioLiquidoAutonomo}</td>
+                      <th className="text-center py-3 px-4" style={{ 
+                        fontWeight: '600', 
+                        fontSize: '1.1rem', 
+                        color: '#212529',
+                        borderRight: '1px solid #dee2e6'
+                      }}>Salário Líquido</th>
+                      <td className="valor total text-right pe-4" style={{ 
+                        fontSize: '1.1rem',
+                        borderRight: '1px solid #dee2e6'
+                      }}>{resultados.salarioLiquidoClt}</td>
+                      <td 
+                        colSpan="2"
+                        className="valor total text-center" 
+                        style={{ 
+                          fontSize: '1.1rem',
+                          borderRight: '1px solid #dee2e6',
+                          padding: '0.75rem 0'
+                        }}
+                      >
+                        {resultados.salarioLiquidoAutonomo}
+                      </td>
                     </tr>
                   </tbody>
                 </Table>
@@ -199,64 +299,46 @@ const Calculadora = () => {
                       fontSize: '1.1rem',
                       borderRadius: '8px',
                       background: 'rgba(255, 255, 255, 1) !important',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                      color: 'black'
                     }}
                   />
                 </Form.Group>
               </Col>
               <Col xs={4}>
-                <div className="d-flex flex-column">
+                <Form.Group controlId="ano" className="d-flex flex-column">
                   <div className="d-flex align-items-center justify-content-center mb-2">
-                    <label htmlFor="ano" className="text-white mb-0" style={{ fontSize: '1.1rem' }}>Ano</label>
+                    <Form.Label className="text-white mb-0" style={{ fontSize: '1.1rem' }}>Ano</Form.Label>
                   </div>
-                  <div className="position-relative" style={{ width: '100%' }}>
-                    <select
-                      id="ano"
-                      value={ano}
-                      onChange={(e) => setAno(parseInt(e.target.value))}
-                      className="form-select text-center"
-                      style={{
-                        height: '48px',
-                        fontSize: '1.1rem',
-                        borderRadius: '8px',
-                        border: '1px solid rgba(0, 0, 0, 0.2)',
-                        color: 'black',
-                        backgroundColor: 'white',
-                        padding: '0 20px',
-                        textAlignLast: 'center',
-                        WebkitAppearance: 'none',
-                        MozAppearance: 'none',
-                        appearance: 'none',
-                        backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6 9 12 15 18 9\'%3e%3c/polyline%3e%3c/svg%3e")',
-                        backgroundRepeat: 'no-repeat',
-                        backgroundPosition: 'right 0.7em top 50%',
-                        backgroundSize: '1.2em',
-                        paddingRight: '2.5em',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      <option value={2025}>2025</option>
-                      <option value={2024}>2024</option>
-                    </select>
-                  </div>
-                </div>
+                  <Form.Select
+                    value={ano}
+                    onChange={(e) => setAno(Number(e.target.value))}
+                    style={{
+                      height: '48px',
+                      fontSize: '1.1rem',
+                      borderRadius: '8px',
+                      background: 'rgba(255, 255, 255, 1) !important',
+                    }}
+                  >
+                    <option value={2024}>2024</option>
+                    <option value={2025}>2025</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col xs={12} className="d-flex justify-content-center">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="lg"
+                  className="px-5"
+                  style={{
+                    borderRadius: '8px',
+                    transition: 'all 0.2s ease-in-out',
+                    marginTop: '1.5rem'
+                  }}
+                >
+                  Calcular
+                </Button>
               </Col>
             </Row>
-            <div className="d-flex justify-content-center mt-4">
-              <Button
-                type="submit"
-                variant="outline-light"
-                size="lg"
-                className="mt-3 px-5"
-                style={{
-                  borderRadius: '8px',
-                  transition: 'all 0.2s ease-in-out'
-                }}
-              >
-                Calcular
-              </Button>
-            </div>
           </Form>
         )}
       </div>
