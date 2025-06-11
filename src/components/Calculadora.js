@@ -30,16 +30,31 @@ const Calculadora = () => {
 
   const [salario, setSalario] = useState('');
   const [ano, setAno] = useState(2025);
-
+  const [erro, setErro] = useState('');
   const [resultados, setResultados] = useState(null);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setErro(''); // Limpa erros anteriores
+    
+    // Verifica se o campo está vazio
+    if (!salario.trim()) {
+      setErro('Por favor, insira um valor de salário válido.');
+      setResultados(null);
+      return;
+    }
     
     // Converter entrada para número corretamente
     const salarioNumerico = parseFloat(
       salario.replace(/\./g, '').replace(',', '.')
     );
+    
+    // Verifica se o valor é um número válido e maior que zero
+    if (isNaN(salarioNumerico) || salarioNumerico <= 0) {
+      setErro('Por favor, insira um valor de salário válido maior que zero.');
+      setResultados(null);
+      return;
+    }
   
     // Garantir que os cálculos retornem números
     const inssClt = Number(calcularInssClt(salarioNumerico, ano));
@@ -73,7 +88,12 @@ const Calculadora = () => {
   return (
     <Container className="d-flex align-items-center" style={{ minHeight: 'calc(100vh - 140px)', padding: '0 20px' }}>
       <div className="w-100 text-center">
-        <h2 className="mb-4 text-white" style={{ fontSize: '2.5rem', fontWeight: '300' }}>Calculadora</h2>
+        <h2 className="mb-2 text-white" style={{ fontSize: '2.5rem', fontWeight: '300' }}>Calculadora</h2>
+        {erro && (
+          <div className="alert alert-danger mx-auto mb-3" style={{ maxWidth: '500px' }}>
+            {erro}
+          </div>
+        )}
         {resultados ? (
           <div className="mx-auto" style={{ maxWidth: '600px' }}>
 
