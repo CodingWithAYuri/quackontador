@@ -110,7 +110,7 @@ const Calculadora = () => {
   return (
     <Container className="d-flex align-items-center" style={{ minHeight: 'calc(100vh - 140px)', padding: '0 20px' }}>
       <div className="w-100 text-center">
-        <h2 className="mb-2 text-white" style={{ fontSize: '2.5rem', fontWeight: '300' }}>Calculadora</h2>
+        <h2 className="mb-4 text-white" style={{ fontSize: '2.5rem', fontWeight: '300' }}>Calculadora</h2>
         {erro && (
           <div className="alert alert-danger mx-auto mb-3" style={{ maxWidth: '500px' }}>
             {erro}
@@ -337,13 +337,14 @@ const Calculadora = () => {
               <Col xs={12} className="d-flex justify-content-center">
                 <Button
                   type="submit"
-                  variant="primary"
+                  variant="outline-light"
                   size="lg"
-                  className="px-5"
+                  className="px-4"
                   style={{
                     borderRadius: '8px',
                     transition: 'all 0.2s ease-in-out',
-                    marginTop: '1.5rem'
+                    marginTop: '0.75rem',
+                    padding: '0.5rem 1.5rem'
                   }}
                 >
                   Calcular
