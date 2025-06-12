@@ -131,15 +131,15 @@ const Calculadora = () => {
                   responsive
                   bordered
                   size="sm"
-                  className="table-modern"
+                  className="table-modern m-0"
                   style={{
                     borderColor: 'rgba(0, 0, 0, 0.1)',
                     background: 'white',
-                    borderCollapse: 'separate',
-                    borderSpacing: '0',
+                    borderCollapse: 'collapse',
                     borderRadius: '12px',
                     overflow: 'hidden',
-                    marginBottom: 0
+                    margin: 0,
+                    width: '100%'
                   }}
                 >
                   <thead>
@@ -147,29 +147,29 @@ const Calculadora = () => {
                       background: '#f8f9fa',
                       borderBottom: '2px solid #e9ecef'
                     }}>
-                      <th className="text-center py-3 px-4" style={{
-                        background: 'transparent',
+                      <th className="text-center py-3" style={{
                         fontWeight: '600',
                         fontSize: '1.1rem',
                         color: '#212529',
-                        borderRight: '1px solid #dee2e6'
+                        borderRight: '1px solid #dee2e6',
+                        width: '25%'
                       }}></th>
-                      <th className="text-center py-3 px-4" style={{
-                        background: 'transparent',
+                      <th className="text-center py-3" style={{
                         fontWeight: '600',
                         fontSize: '1.1rem',
                         color: '#212529',
-                        borderRight: '1px solid #dee2e6'
+                        borderRight: '1px solid #dee2e6',
+                        width: '25%'
                       }}>CLT</th>
                       <th 
                         colSpan="2"
-                        className="text-center py-3 px-4" 
+                        className="text-center py-3" 
                         style={{
-                          background: 'transparent',
                           fontWeight: '600',
                           fontSize: '1.1rem',
                           color: '#212529',
-                          borderRight: '1px solid #dee2e6'
+                          borderRight: '1px solid #dee2e6',
+                          width: '50%'
                         }}
                       >
                         Autônomo
@@ -177,98 +177,127 @@ const Calculadora = () => {
                     </tr>
                   </thead>
                   <tbody>
+                    {/* INSS Row */}
                     <tr style={{ background: '#ffffff' }}>
-                      <th className="text-center py-3 px-4" style={{ 
+                      <th className="text-center py-3" style={{ 
                         fontWeight: '600', 
                         fontSize: '1.1rem', 
                         color: '#212529',
                         borderRight: '1px solid #dee2e6',
                         verticalAlign: 'middle'
                       }}>INSS</th>
-                      <td className="valor text-right pe-4" style={{ 
-                        fontSize: '1.1rem',
-                        borderRight: '1px solid #dee2e6',
-                        verticalAlign: 'middle'
-                      }}>{resultados.inssClt}</td>
-                      <td className="valor text-right pe-4" style={{ 
+                      <td className="text-right py-3 pe-4" style={{ 
                         fontSize: '1.1rem',
                         borderRight: '1px solid #dee2e6',
                         verticalAlign: 'middle'
                       }}>
-                        <div className="d-flex align-items-center justify-content-end">
-                          <span className="me-2">{resultados.inssAutonomo}</span>
-                          <Button 
-                            variant="link" 
-                            className="p-0 d-inline-flex align-items-center justify-content-center"
-                            onClick={() => handleImprimirGuia('GPS')}
-                            title="Imprimir GPS"
-                            style={{ 
-                              width: '32px',
-                              height: '32px',
-                              padding: '0.25rem',
-                              flexShrink: 0
-                            }}
-                          >
-                            <Printer className="text-primary" style={{ fontSize: '1.1rem' }} />
-                          </Button>
-                        </div>
+                        {resultados.inssClt}
+                      </td>
+                      <td className="text-right py-3 pe-4" style={{ 
+                        fontSize: '1.1rem',
+                        borderRight: '1px solid #dee2e6',
+                        verticalAlign: 'middle'
+                      }}>
+                        {resultados.inssAutonomo}
+                      </td>
+                      <td className="text-center py-3" style={{ 
+                        borderRight: '1px solid #dee2e6',
+                        verticalAlign: 'middle',
+                        width: '60px'
+                      }}>
+                        <Button 
+                          variant="link" 
+                          onClick={() => handleImprimirGuia('GPS')}
+                          title="Imprimir GPS"
+                          className="p-0"
+                          style={{ 
+                            color: '#28a745',
+                            minWidth: '32px',
+                            height: '32px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            margin: '0 auto'
+                          }}
+                        >
+                          <Printer style={{ fontSize: '1.1rem' }} />
+                        </Button>
                       </td>
                     </tr>
+                    
+                    {/* IR Row */}
                     <tr style={{ background: '#f9f9f9' }}>
-                      <th className="text-center py-3 px-4" style={{ 
+                      <th className="text-center py-3" style={{ 
                         fontWeight: '600', 
                         fontSize: '1.1rem', 
                         color: '#212529',
                         borderRight: '1px solid #dee2e6',
                         verticalAlign: 'middle'
                       }}>IR</th>
-                      <td className="valor text-right pe-4" style={{ 
-                        fontSize: '1.1rem',
-                        borderRight: '1px solid #dee2e6',
-                        verticalAlign: 'middle'
-                      }}>{resultados.irClt}</td>
-                      <td className="valor text-right pe-4" style={{ 
+                      <td className="text-right py-3 pe-4" style={{ 
                         fontSize: '1.1rem',
                         borderRight: '1px solid #dee2e6',
                         verticalAlign: 'middle'
                       }}>
-                        <div className="d-flex align-items-center justify-content-end">
-                          <span className="me-2">{resultados.irClt}</span>
-                          <Button 
-                            variant="link" 
-                            className="p-0 d-inline-flex align-items-center justify-content-center"
-                            onClick={() => handleImprimirGuia('DARF')}
-                            title="Imprimir DARF"
-                            style={{ 
-                              width: '32px',
-                              height: '32px',
-                              padding: '0.25rem',
-                              flexShrink: 0
-                            }}
-                          >
-                            <Printer className="text-primary" style={{ fontSize: '1.1rem' }} />
-                          </Button>
-                        </div>
+                        {resultados.irClt}
+                      </td>
+                      <td className="text-right py-3 pe-4" style={{ 
+                        fontSize: '1.1rem',
+                        borderRight: '1px solid #dee2e6',
+                        verticalAlign: 'middle'
+                      }}>
+                        {resultados.irClt}
+                      </td>
+                      <td className="text-center py-3" style={{ 
+                        borderRight: '1px solid #dee2e6',
+                        verticalAlign: 'middle',
+                        width: '60px'
+                      }}>
+                        <Button 
+                          variant="link" 
+                          onClick={() => handleImprimirGuia('DARF')}
+                          title="Imprimir DARF"
+                          className="p-0"
+                          style={{ 
+                            color: '#28a745',
+                            minWidth: '32px',
+                            height: '32px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            margin: '0 auto'
+                          }}
+                        >
+                          <Printer style={{ fontSize: '1.1rem' }} />
+                        </Button>
                       </td>
                     </tr>
+                    
+                    {/* Salário Líquido Row */}
                     <tr style={{ background: '#ffffff', borderTop: '2px solid #dee2e6' }}>
-                      <th className="text-center py-3 px-4" style={{ 
+                      <th className="text-center py-3" style={{ 
                         fontWeight: '600', 
                         fontSize: '1.1rem', 
                         color: '#212529',
-                        borderRight: '1px solid #dee2e6'
+                        borderRight: '1px solid #dee2e6',
+                        verticalAlign: 'middle'
                       }}>Salário Líquido</th>
-                      <td className="valor total text-right pe-4" style={{ 
+                      <td className="text-right py-3 pe-4" style={{ 
                         fontSize: '1.1rem',
-                        borderRight: '1px solid #dee2e6'
-                      }}>{resultados.salarioLiquidoClt}</td>
+                        fontWeight: '600',
+                        borderRight: '1px solid #dee2e6',
+                        verticalAlign: 'middle'
+                      }}>
+                        {resultados.salarioLiquidoClt}
+                      </td>
                       <td 
                         colSpan="2"
-                        className="valor total text-center" 
+                        className="text-right py-3 pe-4" 
                         style={{ 
                           fontSize: '1.1rem',
+                          fontWeight: '600',
                           borderRight: '1px solid #dee2e6',
-                          padding: '0.75rem 0'
+                          verticalAlign: 'middle'
                         }}
                       >
                         {resultados.salarioLiquidoAutonomo}
