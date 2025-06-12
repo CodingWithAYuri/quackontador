@@ -490,19 +490,20 @@ const GuiaGPS = () => {
           
           {erro && (
             <Alert 
-            variant="danger" 
-            style={{ 
-              marginBottom: '1.5rem',
-              borderRadius: '8px',
-              borderLeft: '4px solid #dc3545',
-              padding: '1rem 1.25rem',
-              backgroundColor: 'rgba(220, 53, 69, 0.1)'
-            }}
-            className="d-flex align-items-center"
-          >
-            <div style={{ marginRight: '0.75rem', fontSize: '1.25rem' }}>⚠️</div>
-            <div>{erro}</div>
-          </Alert>
+              variant="danger" 
+              style={{ 
+                marginBottom: '1.5rem',
+                borderRadius: '8px',
+                borderLeft: '4px solid #dc3545',
+                padding: '1rem 1.25rem',
+                backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                color: '#fff'
+              }}
+              className="d-flex align-items-center"
+            >
+              <div style={{ marginRight: '0.75rem', fontSize: '1.25rem' }}>⚠️</div>
+              <div style={{ color: '#fff' }}>{erro}</div>
+            </Alert>
           )}
           
           <Form>
