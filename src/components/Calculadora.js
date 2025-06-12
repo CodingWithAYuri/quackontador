@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Button, Form, Row, Col, Table } from 'react-bootstrap';
 import { Printer } from 'react-bootstrap-icons';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { calcularInssClt, calcularIrClt, calcularInssAutonomo } from '../components/Calculos';
 
 const formatarMoeda = (valor) => {
@@ -29,16 +29,48 @@ const Calculadora = () => {
     return () => observer.disconnect();
   }, []);
 
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Verifica se há estado de retorno da GuiaGPS
+  useEffect(() => {
+    if (location.state?.manterValores) {
+      if (location.state.valorSalario) {
+        setSalario(location.state.valorSalario);
+      }
+      if (location.state.anoSelecionado) {
+        setAno(location.state.anoSelecionado);
+        // Se houver salário, recalcula automaticamente
+        if (location.state.valorSalario) {
+          const salarioNumerico = parseFloat(location.state.valorSalario.replace(/\./g, '').replace(',', '.'));
+          if (!isNaN(salarioNumerico)) {
+            const inssClt = parseFloat(calcularInssClt(salarioNumerico, location.state.anoSelecionado));
+            const irClt = parseFloat(calcularIrClt(salarioNumerico - inssClt, location.state.anoSelecionado));
+            const inssAutonomo = parseFloat(calcularInssAutonomo(salarioNumerico, location.state.anoSelecionado));
+            
+            setResultados({
+              inssClt: formatarMoeda(inssClt),
+              irClt: formatarMoeda(irClt),
+              inssAutonomo: formatarMoeda(inssAutonomo),
+              salarioLiquidoClt: formatarMoeda(salarioNumerico - inssClt - irClt),
+              salarioLiquidoAutonomo: formatarMoeda(salarioNumerico - inssAutonomo - irClt)
+            });
+          }
+        }
+      }
+      // Limpa o estado de navegação para evitar recálculos indesejados
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
+  
   const [salario, setSalario] = useState('');
   const [ano, setAno] = useState(2025);
   const [erro, setErro] = useState('');
   const [resultados, setResultados] = useState(null);
-  
-  const navigate = useNavigate();
 
   const handleImprimirGuia = (tipo) => {
     if (tipo === 'GPS') {
-      // Navega para a rota do GuiaGPS passando o valor do INSS
+      // Navega para a rota do GuiaGPS passando o valor do INSS e os dados atuais
       // Remove pontos de milhar e substitui vírgula por ponto para garantir um número válido
       const valorInss = resultados?.inssAutonomo 
         ? resultados.inssAutonomo.replace(/\./g, '').replace(',', '.')
@@ -46,7 +78,9 @@ const Calculadora = () => {
         
       navigate('/guia-gps', { 
         state: { 
-          valorInss: valorInss
+          valorInss: valorInss,
+          valorSalario: salario,
+          anoSelecionado: ano
         } 
       });
     } else if (tipo === 'DARF') {
@@ -61,29 +95,22 @@ const Calculadora = () => {
     
     // Verifica se o campo está vazio
     if (!salario.trim()) {
-      setErro('Por favor, insira um valor de salário válido.');
-      setResultados(null);
       return;
     }
     
-    // Converter entrada para número corretamente
-    const salarioNumerico = parseFloat(
-      salario.replace(/\./g, '').replace(',', '.')
-    );
+    const salarioNumerico = parseFloat(salario.replace(/\./g, '').replace(',', '.'));
     
-    // Verifica se o valor é um número válido e maior que zero
     if (isNaN(salarioNumerico) || salarioNumerico <= 0) {
-      setErro('Por favor, insira um valor de salário válido maior que zero.');
-      setResultados(null);
+      setErro('Por favor, informe um valor de salário válido.');
       return;
     }
-  
-    // Garantir que os cálculos retornem números
-    const inssClt = Number(calcularInssClt(salarioNumerico, ano));
-    const irClt = Number(calcularIrClt(salarioNumerico - inssClt, ano));
-    const inssAutonomo = Number(calcularInssAutonomo(salarioNumerico, ano));
-  
-    // Aplicar formatação
+    
+    setErro('');
+    
+    const inssClt = parseFloat(calcularInssClt(salarioNumerico, ano));
+    const irClt = parseFloat(calcularIrClt(salarioNumerico - inssClt, ano));
+    const inssAutonomo = parseFloat(calcularInssAutonomo(salarioNumerico, ano));
+    
     setResultados({
       inssClt: formatarMoeda(inssClt),
       irClt: formatarMoeda(irClt),

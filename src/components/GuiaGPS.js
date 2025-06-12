@@ -55,7 +55,7 @@ const styles = {
     fontStyle: 'italic'
   },
   inputGroup: {
-    marginBottom: '1rem',
+    marginBottom: '1.25rem',
     '&:last-child': {
       marginBottom: 0
     }
@@ -99,27 +99,7 @@ const styles = {
       opacity: 0.8
     }
   },
-  inputGroup: {
-    marginBottom: '1.25rem',
-    '&:last-child': {
-      marginBottom: 0
-    }
-  },
-  inputGroupText: {
-    backgroundColor: '#444',
-    border: '1px solid #555',
-    borderRight: 'none',
-    color: '#fff',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '0.6rem',
-    borderRadius: '6px 0 0 6px',
-    '&.disabled': {
-      backgroundColor: '#3a3a3a',
-      color: '#777'
-    }
-  },
+
   label: {
     display: 'block',
     marginBottom: '0.5rem',
@@ -204,7 +184,7 @@ const GuiaGPS = () => {
   const navigate = useNavigate();
   const location = useLocation();
   // Obtém os dados do usuário logado
-  const { name: userName, email: userEmail } = useUserEmail();
+  const { name: userName } = useUserEmail();
   
   const [formData, setFormData] = useState({
     nome: '',
@@ -454,7 +434,17 @@ const GuiaGPS = () => {
         // Navegar de volta após um pequeno atraso
         setTimeout(() => {
           setCarregando(false);
-          navigate('/calculos');
+          const handleVoltar = () => {
+            // Retorna para a calculadora com os valores anteriores
+            navigate('/calculos', { 
+              state: {
+                manterValores: true,
+                valorSalario: location.state?.valorSalario || '',
+                anoSelecionado: location.state?.anoSelecionado || new Date().getFullYear()
+              }
+            });
+          };
+          handleVoltar();
         }, 1000);
         
       } catch (error) {
@@ -470,17 +460,34 @@ const GuiaGPS = () => {
   return (
     <div style={styles.pageContainer}>
       <div style={styles.contentContainer}>
-        <a 
-          href="#" 
-          onClick={(e) => {
-            e.preventDefault();
-            navigate('/calculos');
-          }} 
-          style={styles.backLink}
+        <button 
+          onClick={() => navigate('/calculos', {
+            state: {
+              manterValores: true,
+              valorSalario: location.state?.valorSalario || '',
+              anoSelecionado: location.state?.anoSelecionado || new Date().getFullYear()
+            }
+          })}
+          style={{
+            ...styles.backLink,
+            background: 'none',
+            border: 'none',
+            color: 'inherit',
+            cursor: 'pointer',
+            padding: 0,
+            font: 'inherit',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            textDecoration: 'none',
+            '&:hover': {
+              textDecoration: 'underline',
+            }
+          }}
         >
           <ArrowLeft style={styles.icon} />
-          Voltar para a calculadora
-        </a>
+          Voltar para o cálculo
+        </button>
         
         <div style={styles.formContainer}>
           <h2 style={styles.formTitle}>Gerar Guia de Previdência Social</h2>
