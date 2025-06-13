@@ -1,10 +1,14 @@
+// Importa as dependências
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Form, Button, Alert, Spinner, InputGroup, Row, Col } from 'react-bootstrap';
 import { ArrowLeft, Person, CreditCard, Calendar, FileEarmarkText } from 'react-bootstrap-icons';
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
-import { useUserEmail } from '../hooks/useUserEmail'; 
+import autoTable from 'jspdf-autotable';
+import { useUserEmail } from '../hooks/useUserEmail';
+
+// Adiciona o plugin autoTable ao jsPDF
+jsPDF.autoTable = autoTable; 
 
 // Estilos inline para o componente
 const styles = {
@@ -55,9 +59,12 @@ const styles = {
     fontStyle: 'italic'
   },
   inputGroup: {
-    marginBottom: '1.25rem',
-    '&:last-child': {
+    marginBottom: '1rem',
+    '&:last-of-type': {
       marginBottom: 0
+    },
+    '&.compact': {
+      marginBottom: '0.75rem'
     }
   },
   inputGroupText: {
@@ -97,15 +104,43 @@ const styles = {
       color: '#aaa',
       cursor: 'not-allowed',
       opacity: 0.8
+    },
+    '&.compact': {
+      width: 'auto',
+      minWidth: '120px',
+      padding: '0.4rem 0.6rem',
+      display: 'inline-block'
+    },
+    '&.valorGuia': {
+      width: 'auto',
+      minWidth: '80px',
+      textAlign: 'right',
+      padding: '0.35rem 0.5rem',
+      fontSize: '0.9rem',
+      marginLeft: '-1px',
+      display: 'inline-block'
+    },
+    '&.competencia': {
+      width: 'auto',
+      minWidth: '80px',
+      padding: '0.35rem 0.5rem',
+      display: 'inline-block'
     }
   },
 
   label: {
     display: 'block',
-    marginBottom: '0.5rem',
-    color: '#fff',
-    fontSize: '0.9rem',
-    fontWeight: '500'
+    marginBottom: '0.35rem',
+    color: '#e0e0e0',
+    fontWeight: '500',
+    fontSize: '0.78rem',
+    letterSpacing: '0.3px'
+  },
+  formText: {
+    fontSize: '0.7rem',
+    color: '#aaa',
+    marginTop: '0.25rem',
+    display: 'block'
   },
   buttonContainer: {
     display: 'flex',
@@ -192,9 +227,50 @@ const GuiaGPS = () => {
     dataNascimento: '',
     nit: '',
     valor: location.state?.valorInss || '0,00',
-    mesReferencia: new Date().getMonth() + 1,
-    anoReferencia: new Date().getFullYear(),
+    mesReferencia: String(new Date().getMonth() + 1).padStart(2, '0'),
+    anoReferencia: String(new Date().getFullYear()),
+    competencia: ''
   });
+
+  // Atualiza a competência quando mês ou ano mudam
+  useEffect(() => {
+    if (formData.mesReferencia && formData.anoReferencia) {
+      setFormData(prev => ({
+        ...prev,
+        competencia: `${formData.mesReferencia}/${formData.anoReferencia}`
+      }));
+    }
+  }, [formData.mesReferencia, formData.anoReferencia]);
+  
+  // Função para calcular o vencimento (15 do mês seguinte, ou próximo dia útil se for final de semana)
+  const calcularVencimento = (mesAno) => {
+    try {
+      const [mes, ano] = mesAno.split('/').map(Number);
+      
+      // Pega o dia 15 do próximo mês
+      let proximoMes = mes === 12 ? 1 : mes + 1;
+      let anoProxMes = mes === 12 ? ano + 1 : ano;
+      
+      let dataVencimento = new Date(anoProxMes, proximoMes - 1, 15);
+      
+      // Verifica se é sábado (6) ou domingo (0)
+      if (dataVencimento.getDay() === 6) { // Sábado
+        dataVencimento.setDate(dataVencimento.getDate() + 2); // Vai para segunda
+      } else if (dataVencimento.getDay() === 0) { // Domingo
+        dataVencimento.setDate(dataVencimento.getDate() + 1); // Vai para segunda
+      }
+      
+      // Formata a data para dd/mm/yyyy
+      return dataVencimento.toLocaleDateString('pt-BR');
+    } catch (error) {
+      console.error('Erro ao calcular vencimento:', error);
+      // Se houver erro, retorna o 15 do próximo mês como fallback
+      const hoje = new Date();
+      const proximoMes = hoje.getMonth() + 2 > 12 ? 1 : hoje.getMonth() + 2;
+      const anoProxMes = hoje.getMonth() + 2 > 12 ? hoje.getFullYear() + 1 : hoje.getFullYear();
+      return `15/${String(proximoMes).padStart(2, '0')}/${anoProxMes}`;
+    }
+  };
   
   // Preenche o nome do usuário quando o componente é montado
   useEffect(() => {
@@ -239,6 +315,29 @@ const GuiaGPS = () => {
   // Atualiza os campos do formulário
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
+    // Formata o campo de competência para aceitar apenas números e adicionar a barra automaticamente
+    if (name === 'competencia') {
+      // Remove tudo que não for número
+      let formattedValue = value.replace(/\D/g, '');
+      
+      // Adiciona a barra após 2 dígitos
+      if (formattedValue.length > 2) {
+        formattedValue = formattedValue.substring(0, 2) + '/' + formattedValue.substring(2, 6);
+      }
+      
+      // Limita o tamanho máximo (MM/AAAA)
+      if (formattedValue.length > 7) {
+        return;
+      }
+      
+      setFormData(prev => ({
+        ...prev,
+        [name]: formattedValue
+      }));
+      return;
+    }
+    
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -274,7 +373,8 @@ const GuiaGPS = () => {
       { key: 'nome', label: 'Nome Completo' },
       { key: 'cpf', label: 'CPF' },
       { key: 'dataNascimento', label: 'Data de Nascimento' },
-      { key: 'nit', label: 'NIT/PIS/PASEP' }
+      { key: 'nit', label: 'NIT/PIS/PASEP' },
+      { key: 'competencia', label: 'Competência' }
     ];
 
     // Valida campos obrigatórios
@@ -351,37 +451,27 @@ const GuiaGPS = () => {
     // antes de iniciar a geração do PDF (melhora a experiência do usuário)
     setTimeout(() => {
       try {
-        // Criar um novo documento PDF
+        // Cria o documento PDF
         const doc = new jsPDF();
         
-        // Adicionar cabeçalho
-        doc.setFontSize(12);
-        doc.text('MINISTÉRIO DA ECONOMIA', 105, 10, { align: 'center' });
-        doc.text('SECRETARIA ESPECIAL DA RECEITA FEDERAL DO BRASIL', 105, 16, { align: 'center' });
-        doc.text('GUIA DA PREVIDÊNCIA SOCIAL - GPS', 105, 22, { align: 'center' });
+        // Adiciona o cabeçalho
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Guia da Previdência Social', 105, 20, { align: 'center' });
         
-        // Adicionar dados do contribuinte
         doc.setFontSize(10);
-        doc.text('1 - IDENTIFICAÇÃO DO CONTRIBUINTE', 14, 35);
+        doc.setFont('helvetica', 'normal');
         
-        // Tabela de dados do contribuinte
-        doc.autoTable({
-          startY: 40,
-          head: [['CPF', 'Nome', 'NIT/PIS/PASEP']],
-          body: [
-            [
-              formData.cpf,
-              formData.nome.toUpperCase(),
-              formData.nit
-            ]
-          ],
-          theme: 'grid',
-          headStyles: { fillColor: [220, 220, 220] },
-          margin: { left: 14 }
-        });
+        // Valida a competência
+        if (!/^\d{2}\/\d{4}$/.test(formData.competencia)) {
+          setErro('Por favor, informe uma competência válida no formato MM/AAAA');
+          setCarregando(false);
+          return;
+        }
         
         // Dados da competência e valor
-        const mesAno = `${formData.mesReferencia.toString().padStart(2, '0')}/${formData.anoReferencia}`;
+        const mesAno = formData.competencia;
+        const dataVencimento = calcularVencimento(formData.competencia);
         
         // Garante que o valor esteja no formato correto para exibição
         const valorFormatado = (() => {
@@ -400,23 +490,42 @@ const GuiaGPS = () => {
           }
         })();
         
-        // Ajusta o startY para posicionar a tabela de valores mais próxima da tabela de dados
-        const startY = 60; // Reduzido de 100 para 60 para compensar a remoção da tabela de endereço
+        // Adiciona a tabela com os dados do contribuinte
+        autoTable(doc, {
+          startY: 35,
+          head: [['CPF', 'Nome', 'NIT/PIS/PASEP']],
+          body: [
+            [
+              formData.cpf,
+              formData.nome.toUpperCase(),
+              formData.nit
+            ]
+          ],
+          theme: 'grid',
+          headStyles: { fillColor: [220, 220, 220] },
+          margin: { left: 14 }
+        });
         
-        doc.autoTable({
+        // Ajusta o startY para posicionar a tabela de valores mais próxima da tabela de dados
+        const startY = 60;
+        
+        // Tabela com competência e vencimento
+        autoTable(doc, {
           startY: startY,
-          head: [['Competência', 'Código do Pagamento', 'Valor']],
+          head: [['Competência', 'Vencimento', 'Código do Pagamento', 'Valor']],
           body: [
             [
               mesAno,
+              dataVencimento,
               '1007 - Contribuinte Individual',
               { content: valorFormatado, styles: { halign: 'right' } }
             ]
           ],
           columnStyles: {
-            0: { cellWidth: 40 },
-            1: { cellWidth: 90 },
-            2: { cellWidth: 40, halign: 'right' }
+            0: { cellWidth: 30 },
+            1: { cellWidth: 30 },
+            2: { cellWidth: 70 },
+            3: { cellWidth: 30, halign: 'right' }
           },
           theme: 'grid',
           headStyles: { fillColor: [220, 220, 220] },
@@ -538,37 +647,40 @@ const GuiaGPS = () => {
               
               <Col md={6} style={styles.inputGroup}>
                 <label htmlFor="cpf" style={styles.label}>CPF *</label>
-                <InputGroup>
-                  <InputGroup.Text style={styles.inputGroupText}>
-                    <CreditCard />
-                  </InputGroup.Text>
-                  <Form.Control
-                    id="cpf"
-                    type="text"
-                    name="cpf"
-                    value={formData.cpf}
-                    onChange={(e) => {
-                      e.target.value = formatarCPF(e.target.value);
-                      handleChange(e);
-                    }}
-                    placeholder="000.000.000-00"
-                    maxLength="14"
-                    required
-                    style={styles.formControl}
-                    aria-required="true"
-                    aria-describedby="cpfHelp"
-                  />
-                </InputGroup>
-                <small id="cpfHelp" style={{ color: '#aaa', fontSize: '0.75rem' }}>
-                  Apenas números
-                </small>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <InputGroup style={{ display: 'inline-flex', width: 'auto' }}>
+                    <InputGroup.Text style={styles.inputGroupText}>
+                      <CreditCard />
+                    </InputGroup.Text>
+                    <Form.Control
+                      id="cpf"
+                      type="text"
+                      name="cpf"
+                      value={formData.cpf}
+                      onChange={(e) => {
+                        e.target.value = formatarCPF(e.target.value);
+                        handleChange(e);
+                      }}
+                      placeholder="000.000.000-00"
+                      maxLength="14"
+                      required
+                      style={styles.formControl}
+                      className="compact"
+                      aria-required="true"
+                      aria-describedby="cpfHelp"
+                    />
+                  </InputGroup>
+                  <small id="cpfHelp" style={{ color: '#aaa', fontSize: '0.7rem', marginTop: '0.25rem' }}>
+                    Apenas números
+                  </small>
+                </div>
               </Col>
             </Row>
             
             <Row>
               <Col md={4} style={styles.inputGroup}>
                 <label htmlFor="dataNascimento" style={styles.label}>Data de Nascimento *</label>
-                <InputGroup>
+                <InputGroup style={{ display: 'inline-flex', width: 'auto' }}>
                   <InputGroup.Text style={styles.inputGroupText}>
                     <Calendar />
                   </InputGroup.Text>
@@ -588,7 +700,7 @@ const GuiaGPS = () => {
               
               <Col md={4} style={styles.inputGroup}>
                 <label htmlFor="nit" style={styles.label}>NIT/PIS/PASEP *</label>
-                <InputGroup>
+                <InputGroup style={{ display: 'inline-flex', width: 'auto' }}>
                   <InputGroup.Text style={styles.inputGroupText}>
                     <FileEarmarkText />
                   </InputGroup.Text>
@@ -615,9 +727,17 @@ const GuiaGPS = () => {
               </Col>
               
               <Col md={4} style={styles.inputGroup}>
-                <label htmlFor="valorInss" style={styles.label}>Valor do INSS *</label>
-                <InputGroup>
-                  <InputGroup.Text style={styles.inputGroupText}>
+                <label htmlFor="valorInss" style={styles.label}>Valor da Guia *</label>
+                <InputGroup style={{ display: 'inline-flex', width: 'auto' }}>
+                  <InputGroup.Text style={{
+                    ...styles.inputGroupText,
+                    padding: '0.4rem 0.6rem',
+                    borderRight: 'none',
+                    borderTopRightRadius: 0,
+                    borderBottomRightRadius: 0,
+                    fontSize: '0.9rem',
+                    minWidth: '36px'
+                  }}>
                     R$
                   </InputGroup.Text>
                   <Form.Control
@@ -626,16 +746,62 @@ const GuiaGPS = () => {
                     name="valor"
                     value={formData.valor}
                     onChange={handleChange}
+                    placeholder="0,00"
                     required
-                    disabled
-                    style={{ ...styles.formControl, textAlign: 'right' }}
-                    aria-label="Valor do INSS"
-                    aria-describedby="valorInssHelp"
+                    style={{...styles.formControl, textAlign: 'right'}}
+                    className="valorGuia"
                   />
                 </InputGroup>
-                <small id="valorInssHelp" style={{ color: '#aaa', fontSize: '0.75rem' }}>
-                  Valor calculado automaticamente
-                </small>
+              </Col>
+              <Col md={4} style={styles.inputGroup}>
+                <label htmlFor="mesReferencia" style={styles.label}>Competência *</label>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <InputGroup style={{ display: 'inline-flex', width: 'auto' }}>
+                    <Form.Select
+                      id="mesReferencia"
+                      name="mesReferencia"
+                      value={formData.mesReferencia}
+                      onChange={handleChange}
+                      required
+                      style={styles.formControl}
+                      className="competencia"
+                    >
+                      <option value="">Mês</option>
+                      {Array.from({ length: 12 }, (_, i) => {
+                        const monthNumber = String(i + 1).padStart(2, '0');
+                        return (
+                          <option key={monthNumber} value={monthNumber}>
+                            {new Date(2000, i).toLocaleString('pt-BR', { month: 'long' })}
+                          </option>
+                        );
+                      })}
+                    </Form.Select>
+                  </InputGroup>
+                  <InputGroup style={{ display: 'inline-flex', width: 'auto' }}>
+                    <Form.Select
+                      id="anoReferencia"
+                      name="anoReferencia"
+                      value={formData.anoReferencia}
+                      onChange={handleChange}
+                      required
+                      style={styles.formControl}
+                      className="competencia"
+                    >
+                      <option value="">Ano</option>
+                      {Array.from({ length: 5 }, (_, i) => {
+                        const year = new Date().getFullYear() - 2 + i;
+                        return (
+                          <option key={year} value={year}>
+                            {year}
+                          </option>
+                        );
+                      })}
+                    </Form.Select>
+                  </InputGroup>
+                </div>
+                <span style={styles.formText}>
+                  Mês/Ano de referência da guia
+                </span>
               </Col>
             </Row>
             
