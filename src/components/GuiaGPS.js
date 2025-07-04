@@ -59,13 +59,13 @@ const styles = {
     fontStyle: 'italic'
   },
   inputGroup: {
-    marginBottom: '1rem',
-    '&:last-of-type': {
-      marginBottom: 0
-    },
-    '&.compact': {
-      marginBottom: '0.75rem'
-    }
+    marginBottom: '1rem'
+  },
+  lastInputGroup: {
+    marginBottom: 0
+  },
+  compactInputGroup: {
+    marginBottom: '0.75rem'
   },
   inputGroupText: {
     width: '44px',
@@ -284,6 +284,10 @@ const GuiaGPS = () => {
 
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
+  const [calculadoraData] = useState({
+    valorSalario: '0,00',
+    anoSelecionado: new Date().getFullYear()
+  });
 
   // Carrega o valor do INSS da rota quando o componente é montado
   useEffect(() => {
@@ -435,135 +439,82 @@ const GuiaGPS = () => {
     return true;
   };
 
-  // Gera o PDF da guia GPS
-  const gerarGPS = () => {
+  // Gera o PDF da guia GPS e abre em uma nova aba
+  const gerarGPS = async (e) => {
+    console.log('gerarGPS chamado');
+    
+    // Previne o comportamento padrão do evento se existir
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
     // Foca no botão de gerar para garantir que o usuário veja o feedback visual
     const generateButton = document.getElementById('gerarGPSButton');
     if (generateButton) {
       generateButton.blur(); // Remove o foco para evitar múltiplos cliques
     }
     
-    if (!validarFormulario()) return;
+    if (!validarFormulario()) {
+      console.log('Validação do formulário falhou');
+      return;
+    }
     
     setCarregando(true);
+    setErro('');
     
-    // Adiciona um pequeno atraso para garantir que o estado de carregamento seja atualizado
-    // antes de iniciar a geração do PDF (melhora a experiência do usuário)
-    setTimeout(() => {
-      try {
-        // Cria o documento PDF
-        const doc = new jsPDF();
-        
-        // Adiciona o cabeçalho
-        doc.setFontSize(16);
-        doc.setFont('helvetica', 'bold');
-        doc.text('Guia da Previdência Social', 105, 20, { align: 'center' });
-        
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
-        
-        // Valida a competência
-        if (!/^\d{2}\/\d{4}$/.test(formData.competencia)) {
-          setErro('Por favor, informe uma competência válida no formato MM/AAAA');
-          setCarregando(false);
-          return;
-        }
-        
-        // Dados da competência e valor
-        const mesAno = formData.competencia;
-        const dataVencimento = calcularVencimento(formData.competencia);
-        
-        // Garante que o valor esteja no formato correto para exibição
-        const valorFormatado = (() => {
-          try {
-            // Converte o valor para número e formata novamente para garantir consistência
-            const valorNumerico = parseFloat(formData.valor.replace(/\./g, '').replace(',', '.'));
-            return isNaN(valorNumerico) 
-              ? 'R$ 0,00' 
-              : 'R$ ' + valorNumerico.toLocaleString('pt-BR', { 
-                  minimumFractionDigits: 2, 
-                  maximumFractionDigits: 2 
-                });
-          } catch (error) {
-            console.error('Erro ao formatar valor para PDF:', error);
-            return 'R$ 0,00';
-          }
-        })();
-        
-        // Adiciona a tabela com os dados do contribuinte
-        autoTable(doc, {
-          startY: 35,
-          head: [['CPF', 'Nome', 'NIT/PIS/PASEP']],
-          body: [
-            [
-              formData.cpf,
-              formData.nome.toUpperCase(),
-              formData.nit
-            ]
-          ],
-          theme: 'grid',
-          headStyles: { fillColor: [220, 220, 220] },
-          margin: { left: 14 }
-        });
-        
-        // Ajusta o startY para posicionar a tabela de valores mais próxima da tabela de dados
-        const startY = 60;
-        
-        // Tabela com competência e vencimento
-        autoTable(doc, {
-          startY: startY,
-          head: [['Competência', 'Vencimento', 'Código do Pagamento', 'Valor']],
-          body: [
-            [
-              mesAno,
-              dataVencimento,
-              '1007 - Contribuinte Individual',
-              { content: valorFormatado, styles: { halign: 'right' } }
-            ]
-          ],
-          columnStyles: {
-            0: { cellWidth: 30 },
-            1: { cellWidth: 30 },
-            2: { cellWidth: 70 },
-            3: { cellWidth: 30, halign: 'right' }
-          },
-          theme: 'grid',
-          headStyles: { fillColor: [220, 220, 220] },
-          margin: { left: 14 }
-        });
-        
-        // Adicionar rodapé
-        doc.setFontSize(8);
-        doc.text('Documento de Arrecadação da Receita Federal do Brasil - GPS', 105, 150, { align: 'center' });
-        doc.text('Impresso em: ' + new Date().toLocaleDateString(), 105, 155, { align: 'center' });
-        
-        // Salvar o PDF
-        doc.save(`GPS-${formData.nome.split(' ')[0]}-${mesAno}.pdf`);
-        
-        // Navegar de volta após um pequeno atraso
-        setTimeout(() => {
-          setCarregando(false);
-          const handleVoltar = () => {
-            // Retorna para a calculadora com os valores anteriores
-            navigate('/calculos', { 
-              state: {
-                manterValores: true,
-                valorSalario: location.state?.valorSalario || '',
-                anoSelecionado: location.state?.anoSelecionado || new Date().getFullYear()
-              }
-            });
-          };
-          handleVoltar();
-        }, 1000);
-        
-      } catch (error) {
-        console.error('Erro ao gerar PDF:', error);
-        setErro('❌ Ocorreu um erro ao gerar o PDF. Por favor, verifique os dados e tente novamente.');
-        // Rola para o topo para mostrar a mensagem de erro
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    try {
+      console.log('Preparando dados do GPS...');
+      
+      // Prepara os dados do GPS
+      const gpsData = {
+        ...formData,
+        dataVencimento: calcularVencimento(formData.competencia),
+        valor: parseFloat(formData.valor.replace(/\./g, '').replace(',', '.')) || 0
+      };
+
+      // Gera um ID único para o documento
+      const documentId = `gps-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const timestamp = new Date().toISOString();
+
+      // Prepara o objeto completo para salvar
+      const dataToSave = {
+        formData: {
+          ...gpsData,
+          _documentId: documentId,
+          _timestamp: timestamp
+        },
+        calculadoraData: {
+          manterValores: true,
+          valorSalario: calculadoraData.valorSalario || '0,00',
+          anoSelecionado: calculadoraData.anoSelecionado || new Date().getFullYear()
+        },
+        timestamp: timestamp,
+        documentId: documentId
+      };
+
+      // Salva os dados no sessionStorage como fallback
+      sessionStorage.setItem('gpsData', JSON.stringify(dataToSave));
+      console.log('Dados salvos no sessionStorage');
+
+      // Navega para a rota GPSViewer, passando os dados no estado
+      navigate('/gps-viewer', { 
+        state: dataToSave,
+        replace: true
+      });
+      
+      console.log('Navegando para GPSViewer com dados:', dataToSave);
+      
+      // Fecha o loading após um pequeno delay
+      setTimeout(() => {
         setCarregando(false);
-      }
-    }, 100);
+      }, 1000);
+      
+    } catch (error) {
+      console.error('Erro ao gerar GPS:', error);
+      setErro(`Ocorreu um erro ao gerar o GPS: ${error.message}. Por favor, tente novamente.`);
+      setCarregando(false);
+    }
   };
 
   return (
@@ -753,7 +704,7 @@ const GuiaGPS = () => {
                   />
                 </InputGroup>
               </Col>
-              <Col md={4} style={styles.inputGroup}>
+              <Col md={4} style={{...styles.inputGroup, ...styles.lastInputGroup}}>
                 <label htmlFor="mesReferencia" style={styles.label}>Competência *</label>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   <InputGroup style={{ display: 'inline-flex', width: 'auto' }}>
