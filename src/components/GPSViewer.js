@@ -142,6 +142,35 @@ const GPSViewer = () => {
   const isMountedRef = useRef(true);
   const pdfBlobUrlRef = useRef(null);
 
+  // Função para formatar data no padrão brasileiro (dd/mm/yyyy)
+  const formatarDataBrasileira = (dataString) => {
+    console.log('Data original:', dataString);
+    if (!dataString) return '';
+    
+    // Se já estiver no formato brasileiro, retorna como está
+    if (typeof dataString === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(dataString)) {
+      return dataString;
+    }
+    
+    // Se estiver no formato ISO (YYYY-MM-DD)
+    if (typeof dataString === 'string' && /^\d{4}-\d{2}-\d{2}/.test(dataString)) {
+      const [ano, mes, dia] = dataString.split('T')[0].split('-');
+      return `${dia}/${mes}/${ano}`;
+    }
+    
+    // Se for um objeto Date ou timestamp
+    const data = new Date(dataString);
+    if (!isNaN(data.getTime())) {
+      const dia = String(data.getDate()).padStart(2, '0');
+      const mes = String(data.getMonth() + 1).padStart(2, '0');
+      const ano = data.getFullYear();
+      return `${dia}/${mes}/${ano}`;
+    }
+    
+    console.error('Formato de data não suportado:', dataString);
+    return dataString; // Retorna o valor original se não for um formato reconhecido
+  };
+
   // Função para validar os dados do formulário
   const isFormDataValid = useCallback((formData) => {
     return formData && 
@@ -242,7 +271,7 @@ const GPSViewer = () => {
   }, [isFormDataValid]);
 
   // Função para gerar o PDF
-  const generatePDF = useCallback(async (formData) => {
+  const generatePDF = useCallback((formData) => {
     console.log('Iniciando geração do PDF...');
     
     return new Promise((resolve) => {
@@ -289,7 +318,7 @@ const GPSViewer = () => {
         const tableData = [
           { field: 'Nome Completo', value: formData.nome || 'Não informado' },
           { field: 'CPF', value: formData.cpf ? formData.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') : 'Não informado' },
-          { field: 'Data de Nascimento', value: formData.dataNascimento ? new Date(formData.dataNascimento).toLocaleDateString('pt-BR') : 'Não informada' },
+          { field: 'Data de Nascimento', value: formData.dataNascimento ? formatarDataBrasileira(formData.dataNascimento) : 'Não informada' },
           { field: 'NIT/PIS/PASEP', value: formData.nit || 'Não informado' },
           { field: 'Valor Total', value: formData.valor ? `R$ ${parseFloat(formData.valor).toFixed(2).replace('.', ',')}` : 'Não informado' },
           { field: 'Competência', value: formData.competencia || 'Não informada' },

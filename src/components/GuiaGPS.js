@@ -320,24 +320,55 @@ const GuiaGPS = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     
-    // Formata o campo de competência para aceitar apenas números e adicionar a barra automaticamente
-    if (name === 'competencia') {
-      // Remove tudo que não for número
-      let formattedValue = value.replace(/\D/g, '');
+    // Formatação do CPF
+    if (name === 'cpf' && value) {
+      // Remove todos os caracteres não numéricos
+      const cpfLimpo = value.replace(/\D/g, '');
       
-      // Adiciona a barra após 2 dígitos
-      if (formattedValue.length > 2) {
-        formattedValue = formattedValue.substring(0, 2) + '/' + formattedValue.substring(2, 6);
-      }
+      // Limita a 11 dígitos
+      const cpfLimitado = cpfLimpo.slice(0, 11);
       
-      // Limita o tamanho máximo (MM/AAAA)
-      if (formattedValue.length > 7) {
-        return;
+      // Aplica a formatação
+      let cpfFormatado = cpfLimitado;
+      if (cpfLimitado.length > 9) {
+        cpfFormatado = cpfLimitado.replace(
+          /^(\d{3})(\d{3})(\d{3})(\d{1,2}).*$/,
+          (_, p1, p2, p3, p4) => `${p1}.${p2}.${p3}-${p4}`
+        );
+      } else if (cpfLimitado.length > 6) {
+        cpfFormatado = cpfLimitado.replace(
+          /^(\d{3})(\d{3})(\d{1,3})/,
+          (_, p1, p2, p3) => `${p1}.${p2}.${p3}`
+        );
+      } else if (cpfLimitado.length > 3) {
+        cpfFormatado = cpfLimitado.replace(
+          /^(\d{3})(\d{1,3})/,
+          (_, p1, p2) => `${p1}.${p2}`
+        );
       }
       
       setFormData(prev => ({
         ...prev,
-        [name]: formattedValue
+        [name]: cpfFormatado
+      }));
+      return;
+    }
+    
+    // Formatação da Data de Nascimento
+    if (name === 'dataNascimento' && value) {
+      const dataFormatada = formatarDataBrasileira(value);
+      setFormData(prev => ({
+        ...prev,
+        [name]: dataFormatada
+      }));
+      return;
+    }
+    
+    // Formatação do NIT
+    if (name === 'nit' && value) {
+      setFormData(prev => ({
+        ...prev,
+        [name]: formatarNIT(value)
       }));
       return;
     }
@@ -366,6 +397,48 @@ const GuiaGPS = () => {
       .replace(/(\d{5})(\d)/, '$1.$2')
       .replace(/(\d{2})(\d{1,2})/, '$1-$2')
       .replace(/(-\d{1})\d+?$/, '$1');
+  };
+
+  // Formata a data para o formato brasileiro (dd/mm/aaaa)
+  const formatarDataBrasileira = (value) => {
+    if (!value) return '';
+    
+    // Remove qualquer caractere que não seja número
+    const onlyNums = value.replace(/\D/g, '');
+    
+    // Aplica a máscara dd/mm/aaaa
+    if (onlyNums.length <= 2) {
+      return onlyNums;
+    }
+    if (onlyNums.length <= 4) {
+      return `${onlyNums.slice(0, 2)}/${onlyNums.slice(2)}`;
+    }
+    return `${onlyNums.slice(0, 2)}/${onlyNums.slice(2, 4)}/${onlyNums.slice(4, 8)}`;
+  };
+
+  // Converte data no formato brasileiro para ISO (yyyy-mm-dd)
+  const dataBrasileiraParaISO = (dataBr) => {
+    if (!dataBr) return '';
+    const [dia, mes, ano] = dataBr.split('/');
+    if (dia && mes && ano) {
+      return `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+    }
+    return '';
+  };
+
+  // Valida se a data está no formato dd/mm/aaaa e é uma data válida
+  const validarDataBrasileira = (dataBr) => {
+    if (!dataBr) return false;
+    const regex = /^\d{2}\/\d{2}\/\d{4}$/;
+    if (!regex.test(dataBr)) return false;
+    
+    const [dia, mes, ano] = dataBr.split('/').map(Number);
+    const data = new Date(ano, mes - 1, dia);
+    return (
+      data.getDate() === dia &&
+      data.getMonth() === mes - 1 &&
+      data.getFullYear() === ano
+    );
   };
   
   // Busca dados adicionais do usuário no localStorage se necessário
@@ -408,7 +481,15 @@ const GuiaGPS = () => {
     }
     
     // Valida Data de Nascimento
-    const dataNasc = new Date(formData.dataNascimento);
+    if (!validarDataBrasileira(formData.dataNascimento)) {
+      setErro('❌ Data de nascimento inválida. Use o formato dd/mm/aaaa');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return false;
+    }
+    
+    // Converte a data para o formato ISO (yyyy-mm-dd) para validação
+    const dataISO = dataBrasileiraParaISO(formData.dataNascimento);
+    const dataNasc = new Date(dataISO);
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0); // Zera as horas para comparar apenas a data
     
@@ -418,7 +499,8 @@ const GuiaGPS = () => {
       return false;
     }
     
-    if (dataNasc >= hoje) {
+    // Valida se a data não é futura
+    if (dataNasc > hoje) {
       setErro('❌ Data de nascimento inválida. A data não pode ser futura.');
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return false;
@@ -637,14 +719,33 @@ const GuiaGPS = () => {
                   </InputGroup.Text>
                   <Form.Control
                     id="dataNascimento"
-                    type="date"
+                    type="text"
                     name="dataNascimento"
-                    value={formData.dataNascimento}
-                    onChange={handleChange}
+                    placeholder="dd/mm/aaaa"
+                    value={formData.dataNascimento || ''}
+                    onChange={(e) => {
+                      const valor = e.target.value;
+                      // Aplica a máscara de data
+                      const dataFormatada = formatarDataBrasileira(valor);
+                      
+                      setFormData(prev => ({
+                        ...prev,
+                        dataNascimento: dataFormatada
+                      }));
+                    }}
+                    onBlur={(e) => {
+                      if (e.target.value && !validarDataBrasileira(e.target.value)) {
+                        // Se a data for inválida, limpa o campo
+                        setFormData(prev => ({
+                          ...prev,
+                          dataNascimento: ''
+                        }));
+                      }
+                    }}
+                    maxLength={10}
                     required
                     style={styles.formControl}
                     aria-required="true"
-                    max={new Date().toISOString().split('T')[0]}
                   />
                 </InputGroup>
               </Col>
