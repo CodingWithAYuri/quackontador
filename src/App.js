@@ -1,5 +1,5 @@
 import React from 'react';
-import { HashRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Header from './components/Header';
@@ -37,9 +37,12 @@ function App() {
           <Route path="/cadastro" element={<SignUpForm />} />
           
           {/* Rotas públicas com cabeçalho e rodapé */}
-          <Route path="/" element={<WithHeaderAndFooter><Main /></WithHeaderAndFooter>} />
+          <Route path="/" element={
+            localStorage.getItem('isLoggedIn') === 'true' ? 
+            <Navigate to="/calculos" replace /> : 
+            <WithHeaderAndFooter><Main /></WithHeaderAndFooter>
+          } />
           <Route path="/contactForm" element={<WithHeaderAndFooter><ContactForm /></WithHeaderAndFooter>} />
-          <Route path="*" element={<div>Página não encontrada</div>} />
           <Route path="/termos-de-uso" element={<WithHeaderAndFooter><TermosDeUso /></WithHeaderAndFooter>} />
           <Route path="/politica-de-privacidade" element={<WithHeaderAndFooter><PrivacyPolicy /></WithHeaderAndFooter>} />
           
@@ -85,6 +88,13 @@ function App() {
               </WithHeaderAndFooter>
             } 
           />
+          
+          {/* Rota de fallback para páginas não encontradas - deve ser a última rota */}
+          <Route path="*" element={
+            <WithHeaderAndFooter>
+              <div style={{ padding: '2rem', color: '#fff', textAlign: 'center' }}>Página não encontrada</div>
+            </WithHeaderAndFooter>
+          } />
         </Routes>
         <ToastContainer
           position="top-right"

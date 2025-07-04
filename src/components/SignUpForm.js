@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FaUser, FaEnvelope, FaLock } from 'react-icons/fa';
-// Importação removida pois não é mais necessária
 
 function SignUpForm() {
   const [formData, setFormData] = useState({
@@ -15,10 +14,6 @@ function SignUpForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const navigate = useNavigate();
-  const location = useLocation();
-  
-  // Pega a rota de redirecionamento da localização ou usa a página inicial como padrão
-  const from = location.state?.from || '/';
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -124,8 +119,10 @@ function SignUpForm() {
       localStorage.setItem('isLoggedIn', 'true');
       localStorage.setItem('userData', JSON.stringify(data));
       
-      // Redireciona para a página de origem ou para a página principal após cadastro bem-sucedido
-      navigate(from, { replace: true });
+      // Redireciona para a página de cálculos após cadastro bem-sucedido
+      console.log('Redirecionando após cadastro para: /calculos');
+      // Sempre redireciona para cálculos após o cadastro
+      navigate('/calculos', { replace: true });
     } catch (error) {
       console.error('Erro no cadastro:', error);
       setSubmitError('Ocorreu um erro ao realizar o cadastro. Tente novamente.');
