@@ -15,6 +15,7 @@ import PrivacyPolicy from './components/PrivacyPolicy';
 import ProtectedRoute from './components/ProtectedRoute';
 import GuiaGPS from './components/GuiaGPS';
 import GPSViewer from './components/GPSViewer';
+import MeusDados from './components/MeusDados';
 
 function App() {
   const appStyles = {
@@ -88,6 +89,13 @@ function App() {
               </WithHeaderAndFooter>
             } 
           />
+          <Route path="/meus-dados" element={
+            <WithHeaderAndFooter>
+              <ProtectedRoute>
+                <MeusDados />
+              </ProtectedRoute>
+            </WithHeaderAndFooter>
+          } />
           
           {/* Rota de fallback para páginas não encontradas - deve ser a última rota */}
           <Route path="*" element={

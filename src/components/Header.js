@@ -46,6 +46,10 @@ const Header = () => {
                     <i className="far fa-envelope-open" />
                     <span className="ms-2">Contato</span>
                   </Dropdown.Item>
+                  <Dropdown.Item as={Link} to="/meus-dados" className="disable-dropdown-item-color">
+                    <i className="far fa-user" />
+                    <span className="ms-2">Meus Dados</span>
+                  </Dropdown.Item>
                   {email ? (
                     <Dropdown.Item as={Link} to="/logout" className="disable-dropdown-item-color">
                       <i className="fas fa-sign-out-alt" />

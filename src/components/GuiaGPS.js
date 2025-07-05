@@ -221,6 +221,23 @@ const GuiaGPS = () => {
   // Obtém os dados do usuário logado
   const { name: userName } = useUserEmail();
   
+  // Carrega os dados salvos do usuário ao montar o componente
+  useEffect(() => {
+    const savedData = localStorage.getItem('userGPSData');
+    if (savedData) {
+      const userData = JSON.parse(savedData);
+      setFormData(prev => ({
+        ...prev,
+        ...userData,
+        // Mantém os valores específicos do formulário se não existirem nos dados salvos
+        valor: location.state?.valorInss || prev.valor,
+        mesReferencia: prev.mesReferencia,
+        anoReferencia: prev.anoReferencia,
+        competencia: prev.competencia
+      }));
+    }
+  }, [location.state?.valorInss]);
+
   const [formData, setFormData] = useState({
     nome: '',
     cpf: '',
