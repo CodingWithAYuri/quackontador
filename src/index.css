@@ -11,3 +11,101 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Estilos para o dropdown do Header */
+
+/* Efeito de transição suave para todos os itens do dropdown */
+.dropdown-menu {
+  transition: all 0.3s ease-in-out;
+  border: none;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  min-width: 200px;
+  background-color: #333;
+  border-radius: 8px;
+  padding: 0.5rem 0;
+  overflow: hidden;
+}
+
+/* Efeito de brilho ao passar o mouse */
+.dropdown-item {
+  position: relative;
+  padding: 0.75rem 1.25rem;
+  color: #f8f9fa;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: transparent;
+  border: none;
+  text-decoration: none;
+}
+
+/* Gradiente e brilho ao passar o mouse */
+.dropdown-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  transition: 0.5s;
+}
+
+/* Efeito de brilho ao passar o mouse */
+.dropdown-item:hover::before {
+  left: 100%;
+}
+
+/* Efeito de fundo ao passar o mouse */
+.dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  transform: translateX(5px);
+}
+
+/* Animação dos ícones */
+.dropdown-item i {
+  transition: all 0.3s ease;
+  width: 20px;
+  text-align: center;
+  margin-right: 10px;
+  color: #adb5bd;
+}
+
+.dropdown-item:hover i {
+  color: #ffffff;
+  transform: scale(1.2);
+}
+
+/* Efeito de borda sutil no hover */
+.dropdown-item:not(:last-child) {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Efeito de sombra no dropdown */
+.dropdown-menu {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 
+              0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Animação de entrada do dropdown */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-menu.show {
+  animation: slideIn 0.3s ease-out forwards;
+}

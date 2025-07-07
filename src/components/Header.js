@@ -9,9 +9,9 @@ const Header = () => {
   const { email, name } = useUserEmail();
 
   return (
-    <header className="masthead masthead-nav">
+    <header>
       <Container>
-        <Navbar expand="lg" className="justify-content-between disable-btn-bg">
+        <Navbar expand="lg">
           <div className="d-flex align-items-center">
             {/* Logo e Título */}
             <Navbar.Brand as={Link} to="/" className="d-flex align-items-center">
@@ -41,22 +41,22 @@ const Header = () => {
                     alt="User Avatar"
                   />
                 </Dropdown.Toggle>
-                <Dropdown.Menu align="end" className="disable-dropdown-menu">
-                  <Dropdown.Item as={Link} to="/contactForm" className="disable-dropdown-item-color">
-                    <i className="far fa-envelope-open" />
-                    <span className="ms-2">Contato</span>
-                  </Dropdown.Item>
-                  <Dropdown.Item as={Link} to="/meus-dados" className="disable-dropdown-item-color">
+                <Dropdown.Menu align="end">
+                <Dropdown.Item as={Link} to="/meus-dados">
                     <i className="far fa-user" />
                     <span className="ms-2">Meus Dados</span>
                   </Dropdown.Item>
+                  <Dropdown.Item as={Link} to="/contactForm">
+                    <i className="far fa-envelope-open" />
+                    <span className="ms-2">Contato</span>
+                  </Dropdown.Item>
                   {email ? (
-                    <Dropdown.Item as={Link} to="/logout" className="disable-dropdown-item-color">
+                    <Dropdown.Item as={Link} to="/logout">
                       <i className="fas fa-sign-out-alt" />
                       <span className="ms-2">Sair</span>
                     </Dropdown.Item>
                   ) : (
-                    <Dropdown.Item as={Link} to="/login" className="disable-dropdown-item-color">
+                    <Dropdown.Item as={Link} to="/login">
                       <i className="fas fa-sign-in-alt" />
                       <span className="ms-2">Login</span>
                     </Dropdown.Item>
