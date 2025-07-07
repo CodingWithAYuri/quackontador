@@ -1,5 +1,5 @@
 import React from 'react';
-import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Header from './components/Header';
@@ -39,8 +39,6 @@ function App() {
           
           {/* Rotas públicas com cabeçalho e rodapé */}
           <Route path="/" element={
-            localStorage.getItem('isLoggedIn') === 'true' ? 
-            <Navigate to="/calculos" replace /> : 
             <WithHeaderAndFooter><Main /></WithHeaderAndFooter>
           } />
           <Route path="/contactForm" element={<WithHeaderAndFooter><ContactForm /></WithHeaderAndFooter>} />
