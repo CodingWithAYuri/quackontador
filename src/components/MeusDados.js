@@ -268,8 +268,8 @@ const MeusDados = () => {
     minHeight: 'calc(100vh - 120px)', // Ajusta a altura para considerar o header e footer
     display: 'flex',
     flexDirection: 'column',
-    backgroundColor: '#1a1a1a',
-    color: '#fff',
+    backgroundColor: 'var(--bg-primary)', // Atualizado para usar a variável CSS
+    color: 'var(--text-primary)',
     width: '100%',
     boxSizing: 'border-box',
     padding: '20px 0'
@@ -298,7 +298,7 @@ const MeusDados = () => {
           width: '100%',
           maxWidth: '500px',
           margin: '0 auto',
-          backgroundColor: '#2a2a2a',
+          backgroundColor: 'var(--card-bg)',
           borderRadius: '8px',
           padding: '2rem',
           boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
@@ -418,7 +418,7 @@ const MeusDados = () => {
                       padding: '0.8rem 1rem 0.8rem 2.5rem',
                       borderRadius: '4px',
                       border: '1px solid #555',
-                      backgroundColor: '#444',
+                      backgroundColor: 'var(--input-bg)',
                       color: '#fff',
                       fontSize: '0.95rem',
                       transition: 'all 0.2s ease-in-out',
@@ -448,7 +448,7 @@ const MeusDados = () => {
                       padding: '0.8rem 1rem 0.8rem 2.5rem',
                       borderRadius: '4px',
                       border: '1px solid #555',
-                      backgroundColor: '#444',
+                      backgroundColor: 'var(--input-bg)',
                       color: '#fff',
                       fontSize: '0.95rem',
                       transition: 'all 0.2s ease-in-out',
@@ -478,7 +478,7 @@ const MeusDados = () => {
                       padding: '0.8rem 1rem 0.8rem 2.5rem',
                       borderRadius: '4px',
                       border: '1px solid #555',
-                      backgroundColor: '#444',
+                      backgroundColor: 'var(--input-bg)',
                       color: '#fff',
                       fontSize: '0.95rem',
                       transition: 'all 0.2s ease-in-out',

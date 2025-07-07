@@ -40,7 +40,7 @@ const styles = {
   formContainer: {
     width: '100%',
     padding: '1.5rem',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: 'var(--card-bg)',
     borderRadius: '8px',
     boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)'
   },
@@ -72,7 +72,7 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#444',
+    backgroundColor: 'var(--input-bg)',
     border: '1px solid #555',
     color: '#fff',
     borderRight: 'none',
@@ -85,7 +85,7 @@ const styles = {
     }
   },
   formControl: {
-    backgroundColor: '#444',
+    backgroundColor: 'var(--input-bg)',
     border: '1px solid #555',
     borderLeft: 'none',
     color: '#fff',

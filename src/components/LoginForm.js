@@ -83,7 +83,7 @@ function LoginForm() {
       display: 'flex',
       flexDirection: 'column',
       minHeight: '100vh',
-      backgroundColor: '#1a1a1a',
+      backgroundColor: 'var(--bg-primary)',
       alignItems: 'center',
       justifyContent: 'center',
       padding: '1rem',
@@ -92,7 +92,7 @@ function LoginForm() {
     formContainer: {
       width: '100%',
       maxWidth: '400px',
-      backgroundColor: '#333',
+      backgroundColor: 'var(--bg-primary)',
       borderRadius: '8px',
       padding: '2rem',
       boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
@@ -117,7 +117,7 @@ function LoginForm() {
       borderRadius: '50%',
       border: '3px solid rgba(255, 255, 255, 0.2)',
       objectFit: 'cover',
-      backgroundColor: '#444',
+      backgroundColor: 'var(--input-bg)',
       padding: '4px',
       boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2)'
     },
@@ -130,7 +130,7 @@ function LoginForm() {
       padding: '0.8rem 1rem 0.8rem 2.5rem',
       borderRadius: '4px',
       border: '1px solid #555',
-      backgroundColor: '#444',
+      backgroundColor: 'var(--input-bg)',
       color: '#fff',
       fontSize: '0.9rem',
       transition: 'all 0.2s ease-in-out'
