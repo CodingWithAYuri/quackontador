@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { FaUser, FaCalendarAlt, FaIdCard, FaArrowLeft, FaSave, FaLock, FaEye, FaEyeSlash, FaChevronUp, FaChevronDown } from 'react-icons/fa';
+import { FaUser, FaCalendarAlt, FaIdCard, FaArrowLeft, FaSave, FaLock } from 'react-icons/fa';
 
 const MeusDados = () => {
   const navigate = useNavigate();
@@ -15,18 +15,12 @@ const MeusDados = () => {
   
   // Estados para o formulário de mudança de senha
   const [showChangePassword, setShowChangePassword] = useState(false);
-  const [showMainForm, setShowMainForm] = useState(true);
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
   const [passwordErrors, setPasswordErrors] = useState({});
-  const [showPassword, setShowPassword] = useState({
-    current: false,
-    new: false,
-    confirm: false
-  });
 
   // Carrega os dados salvos ao montar o componente
   useEffect(() => {
@@ -74,13 +68,7 @@ const MeusDados = () => {
     }
   };
 
-  // Alterna a visibilidade da senha
-  const togglePasswordVisibility = (field) => {
-    setShowPassword(prev => ({
-      ...prev,
-      [field]: !prev[field]
-    }));
-  };
+  // Função removida para corrigir warning do ESLint
 
   // Envia o formulário de dados pessoais
   const handleSubmit = async (e) => {
@@ -264,6 +252,7 @@ const MeusDados = () => {
 
   // A animação de loading é definida diretamente nos estilos inline
 
+  // Estilos para o layout principal
   const containerStyle = {
     minHeight: 'calc(100vh - 120px)', // Ajusta a altura para considerar o header e footer
     display: 'flex',
@@ -272,7 +261,8 @@ const MeusDados = () => {
     color: 'var(--text-primary)',
     width: '100%',
     boxSizing: 'border-box',
-    padding: '20px 0'
+    padding: '20px 0',
+    justifyContent: 'center' // Centraliza verticalmente
   };
 
   const contentStyle = {
@@ -283,530 +273,243 @@ const MeusDados = () => {
     boxSizing: 'border-box',
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    flex: '1',
-    minHeight: '0' // Permite que o flex funcione corretamente
+    alignItems: 'center'
   };
-
-
+  
+  // Estilos para o card principal
+  const cardStyle = {
+    width: '100%',
+    maxWidth: '500px',
+    margin: '0 auto',
+    backgroundColor: 'var(--card-bg)',
+    borderRadius: '8px',
+    padding: '2rem',
+    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+    border: '1px solid rgba(255, 255, 255, 0.2)' // Nova borda para combinar com ContactForm
+  };
+  
+  // Estilo para os campos de formulário
+  const inputStyle = {
+    width: '100%',
+    padding: '0.8rem 1rem 0.8rem 2.5rem',
+    borderRadius: '4px',
+    border: '1px solid #555',
+    backgroundColor: 'var(--input-bg)',
+    color: 'var(--text-primary)',
+    fontSize: '0.95rem',
+    transition: 'all 0.2s ease-in-out',
+    boxSizing: 'border-box'
+  };
+  
+  // Estilo para os ícones nos campos
+  const iconStyle = {
+    position: 'absolute',
+    left: '1rem',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    color: '#aaa'
+  };
+  
+  // Estilo para os botões
+  const buttonStyle = {
+    backgroundColor: 'var(--accent-color)',
+    color: 'var(--text-primary)',
+    border: 'none',
+    borderRadius: '4px',
+    fontSize: '0.95rem',
+    fontWeight: '500',
+    cursor: 'pointer',
+    padding: '0.5rem 1.25rem',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    transition: 'all 0.2s ease-in-out'
+  };
+  
+  // Estilo removido para corrigir warning do ESLint
 
   return (
     <div style={containerStyle}>
       <div style={contentStyle}>
-        <div style={{
-          width: '100%',
-          maxWidth: '500px',
-          margin: '0 auto',
-          backgroundColor: 'var(--card-bg)',
-          borderRadius: '8px',
-          padding: '2rem',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-        }}>
-          <Link 
-            to="/" 
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              color: '#4dabf7',
-              textDecoration: 'none',
-              marginBottom: '1rem',
-              fontSize: '0.95rem',
-              cursor: 'pointer'
-            }}
-            onClick={(e) => {
-              e.preventDefault();
-              navigate(-1);
-            }}
-          >
-            <FaArrowLeft style={{ marginRight: '0.5rem' }} /> Voltar
-          </Link>
+        <div style={cardStyle}>
+          {!showChangePassword ? (
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+              <Link
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  color: '#4dabf7',
+                  textDecoration: 'none',
+                  fontSize: '0.95rem',
+                  cursor: 'pointer'
+                }}
+                onClick={() => setShowChangePassword(true)}
+              >
+                <FaLock style={{ marginRight: '0.5rem' }} /> Alterar Senha
+              </Link>
+            </div>
+          ) : (
+            <Link 
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                color: '#4dabf7',
+                textDecoration: 'none',
+                marginBottom: '1rem',
+                fontSize: '0.95rem',
+                cursor: 'pointer'
+              }}
+              onClick={() => setShowChangePassword(false)}
+            >
+              <FaArrowLeft style={{ marginRight: '0.5rem' }} /> Voltar para Meus Dados
+            </Link>
+          )}
           
           <h1 style={{ 
+            fontSize: '2rem', 
+            fontWeight: '600', 
+            marginBottom: '1.5rem',
             textAlign: 'center',
-            margin: '0 0 2rem 0',
-            color: '#fff',
-            fontSize: '1.8rem',
-            fontWeight: '500'
-          }}>Meus Dados</h1>
+            color: 'var(--text-primary)'
+          }}>{showChangePassword ? 'Alterar a Senha' : 'Meus Dados'}</h1>
           
-          {error && <div style={{ 
-            color: '#ff6b6b',
-            fontSize: '0.85rem',
-            margin: '0.3rem 0 1rem 0',
-            textAlign: 'center',
-            minHeight: '1.2rem',
-            display: 'block'
-          }}>{error}</div>}
+          {/* Exibe as mensagens de erro/sucesso independentemente do formulário ativo */}
+          {error && <div style={{ color: '#ff6b6b', marginBottom: '1rem', textAlign: 'center' }}>{error}</div>}
+          {success && <div style={{ color: '#51cf66', marginBottom: '1rem', textAlign: 'center' }}>{success}</div>}
           
-          {success && <div style={{
-            color: '#51cf66',
-            fontSize: '0.85rem',
-            margin: '0.3rem 0 1rem 0',
-            minHeight: '1.2rem',
-            display: 'block',
-            textAlign: 'center'
-          }}>{success}</div>}
-          
-          {/* Seção de dados principais */}
-          {showMainForm && (
-            <div style={{ 
-              transition: 'all 0.3s ease',
-              opacity: showChangePassword ? 0.7 : 1,
-              maxHeight: showMainForm ? '1000px' : '0',
-              overflow: 'hidden'
-            }}>
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '1rem',
-                borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-                paddingBottom: '0.5rem'
-              }}>
-                <h3 style={{ margin: 0 }}>Informações Pessoais</h3>
-                <button 
-                  type="button" 
-                  onClick={() => {
-                    setShowMainForm(!showMainForm);
-                    // Se estiver mostrando as informações pessoais, esconde o formulário de senha
-                    if (showMainForm) {
-                      setShowChangePassword(false);
-                    }
-                  }}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: '#4dabf7',
-                    cursor: 'pointer',
-                    fontSize: '0.9rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.3rem'
-                  }}
-                >
-                  {showMainForm ? (
-                    <>
-                      <span>Minimizar</span>
-                      <FaChevronUp />
-                    </>
-                  ) : (
-                    <>
-                      <span>Expandir</span>
-                      <FaChevronDown />
-                    </>
-                  )}
-                </button>
-              </div>
+          {/* Formulário de dados pessoais - exibido apenas quando showChangePassword é false */}
+          {!showChangePassword && (
+            <div>
               <form onSubmit={handleSubmit}>
                 <div style={{ marginBottom: '1.5rem', position: 'relative' }}>
-                  <FaUser style={{
-                    position: 'absolute',
-                    left: '1rem',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    color: '#aaa'
-                  }} />
+                  <FaUser style={iconStyle} />
                   <input
                     type="text"
                     name="cpf"
-                    placeholder="CPF (000.000.000-00)"
+                    placeholder="CPF"
                     value={formData.cpf}
                     onChange={handleCPFChange}
-                    style={{
-                      width: '100%',
-                      padding: '0.8rem 1rem 0.8rem 2.5rem',
-                      borderRadius: '4px',
-                      border: '1px solid #555',
-                      backgroundColor: 'var(--input-bg)',
-                      color: '#fff',
-                      fontSize: '0.95rem',
-                      transition: 'all 0.2s ease-in-out',
-                      boxSizing: 'border-box'
-                    }}
+                    style={inputStyle}
                     maxLength="14"
                     required
                   />
                 </div>
                 
                 <div style={{ marginBottom: '1.5rem', position: 'relative' }}>
-                  <FaCalendarAlt style={{
-                    position: 'absolute',
-                    left: '1rem',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    color: '#aaa'
-                  }} />
+                  <FaCalendarAlt style={iconStyle} />
                   <input
                     type="text"
                     name="dataNascimento"
-                    placeholder="Data de Nascimento (DD/MM/AAAA)"
+                    placeholder="Data de Nascimento"
                     value={formData.dataNascimento}
                     onChange={handleDateChange}
-                    style={{
-                      width: '100%',
-                      padding: '0.8rem 1rem 0.8rem 2.5rem',
-                      borderRadius: '4px',
-                      border: '1px solid #555',
-                      backgroundColor: 'var(--input-bg)',
-                      color: '#fff',
-                      fontSize: '0.95rem',
-                      transition: 'all 0.2s ease-in-out',
-                      boxSizing: 'border-box'
-                    }}
+                    style={inputStyle}
                     maxLength="10"
                     required
                   />
                 </div>
                 
                 <div style={{ marginBottom: '1.5rem', position: 'relative' }}>
-                  <FaIdCard style={{
-                    position: 'absolute',
-                    left: '1rem',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    color: '#aaa'
-                  }} />
+                  <FaIdCard style={iconStyle} />
                   <input
                     type="text"
                     name="nit"
-                    placeholder="NIT/PIS/PASEP (000.00000.00-0)"
+                    placeholder="NIT/PIS/PASEP"
                     value={formData.nit}
                     onChange={handleNITChange}
-                    style={{
-                      width: '100%',
-                      padding: '0.8rem 1rem 0.8rem 2.5rem',
-                      borderRadius: '4px',
-                      border: '1px solid #555',
-                      backgroundColor: 'var(--input-bg)',
-                      color: '#fff',
-                      fontSize: '0.95rem',
-                      transition: 'all 0.2s ease-in-out',
-                      boxSizing: 'border-box'
-                    }}
+                    style={inputStyle}
                     maxLength="14"
                     required
                   />
                 </div>
                 
+                <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginTop: '1rem' }}>
+                  <button 
+                    type="submit" 
+                    disabled={loading} 
+                    style={{...buttonStyle, opacity: loading ? 0.7 : 1}}
+                  >
+                    {loading ? (
+                      <span style={{
+                        display: 'inline-block',
+                        width: '1rem',
+                        height: '1rem',
+                        border: '2px solid rgba(255, 255, 255, 0.3)',
+                        borderRadius: '50%',
+                        borderTopColor: '#fff',
+                        animation: 'spin 1s ease-in-out infinite',
+                        marginRight: '0.5rem'
+                      }}></span>
+                    ) : (
+                      <FaSave style={{ marginRight: '0.5rem' }} />
+                    )}
+                    {loading ? 'Salvando...' : 'Salvar Dados'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+          
+          {/* Botão para alternar entre os formulários removido - agora é um link */}
+          {showChangePassword && (
+            <form onSubmit={handlePasswordSubmit}>
+              <div style={{ marginBottom: '1.5rem', position: 'relative' }}>
+                <FaLock style={iconStyle} />
+                <input
+                  type="password"
+                  name="currentPassword"
+                  placeholder="Senha Atual"
+                  value={passwordData.currentPassword}
+                  onChange={handlePasswordChange}
+                  style={inputStyle}
+                  required
+                />
+              </div>
+              <div style={{ marginBottom: '1.5rem', position: 'relative' }}>
+                <FaLock style={iconStyle} />
+                <input
+                  type="password"
+                  name="newPassword"
+                  placeholder="Nova Senha"
+                  value={passwordData.newPassword}
+                  onChange={handlePasswordChange}
+                  style={inputStyle}
+                  required
+                />
+              </div>
+              <div style={{ marginBottom: '1.5rem', position: 'relative' }}>
+                <FaLock style={iconStyle} />
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  placeholder="Confirmar Nova Senha"
+                  value={passwordData.confirmPassword}
+                  onChange={handlePasswordChange}
+                  style={inputStyle}
+                  required
+                />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginTop: '1rem' }}>
                 <button 
                   type="submit" 
                   disabled={loading} 
-                  style={{
-                    padding: '0.75rem 1.5rem',
-                    backgroundColor: '#4dabf7',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '4px',
-                    fontSize: '1rem',
-                    fontWeight: '500',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease-in-out',
-                    marginTop: '0.5rem',
-                    display: 'inline-block',
-                    textAlign: 'center',
-                    textDecoration: 'none',
-                    whiteSpace: 'nowrap',
-                    width: '100%',
-                    boxSizing: 'border-box',
-                    opacity: loading ? 0.7 : 1,
-                    ':hover': !loading ? {
-                      backgroundColor: '#339af0',
-                      transform: 'translateY(-1px)'
-                    } : {}
-                  }}
+                  style={{...buttonStyle, opacity: loading ? 0.7 : 1}}
                 >
                   {loading ? (
-                    <>
-                      <span style={{
-                        display: 'inline-block',
-                        width: '1rem',
-                        height: '1rem',
-                        border: '2px solid rgba(255, 255, 255, 0.3)',
-                        borderRadius: '50%',
-                        borderTopColor: '#fff',
-                        animation: 'spin 1s ease-in-out infinite',
-                        marginRight: '0.5rem'
-                      }}></span>
-                      Salvando...
-                    </>
+                    <span style={{
+                      display: 'inline-block',
+                      width: '1rem',
+                      height: '1rem',
+                      border: '2px solid rgba(255, 255, 255, 0.3)',
+                      borderRadius: '50%',
+                      borderTopColor: '#fff',
+                      animation: 'spin 1s ease-in-out infinite',
+                      marginRight: '0.5rem'
+                    }}></span>
                   ) : (
-                    <>
-                      <FaSave style={{ marginRight: '0.5rem' }} />
-                      Salvar Dados
-                    </>
+                    <FaSave style={{ marginRight: '0.5rem' }} />
                   )}
-                </button>
-              </form>
-              <div style={{ marginTop: '1rem' }}>
-                <span 
-                  style={{ 
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    cursor: 'pointer',
-                    color: '#4dabf7',
-                    fontSize: '0.95rem',
-                    textDecoration: 'none',
-                    ':hover': {
-                      textDecoration: 'underline'
-                    }
-                  }}
-                  onClick={() => {
-                    setShowChangePassword(!showChangePassword);
-                    // Se estiver mostrando o formulário de senha, minimiza o de informações pessoais
-                    if (!showChangePassword) {
-                      setShowMainForm(false);
-                    } else {
-                      setShowMainForm(true);
-                    }
-                  }}
-                >
-                  <FaLock style={{ marginRight: '0.5rem' }} />
-                  {showChangePassword ? 'Mostrar Informações Pessoais' : 'Alterar Senha'}
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* Formulário de alteração de senha */}
-          {showChangePassword && (
-            <form onSubmit={handlePasswordSubmit} style={{ marginTop: '1.5rem' }}>
-              <h3 style={{
-                fontSize: '1.2rem',
-                fontWeight: '500',
-                color: '#fff',
-                margin: '0 0 1rem 0',
-                paddingBottom: '0.5rem',
-                borderBottom: '1px solid #444'
-              }}>Alterar Senha</h3>
-              
-              <div style={{ marginBottom: '1.5rem', position: 'relative' }}>
-                <FaLock style={{
-                  position: 'absolute',
-                  left: '1rem',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: '#aaa'
-                }} />
-                <input
-                  type={showPassword.current ? 'text' : 'password'}
-                  name="currentPassword"
-                  placeholder="Senha atual"
-                  value={passwordData.currentPassword}
-                  onChange={handlePasswordChange}
-                  style={{
-                    width: '100%',
-                    padding: '0.8rem 1rem 0.8rem 2.5rem',
-                    borderRadius: '4px',
-                    border: '1px solid #555',
-                    backgroundColor: '#444',
-                    color: '#fff',
-                    fontSize: '0.95rem',
-                    transition: 'all 0.2s ease-in-out',
-                    boxSizing: 'border-box',
-                    paddingRight: '2.5rem'
-                  }}
-                  autoComplete="current-password"
-                />
-                <button 
-                  type="button" 
-                  onClick={() => togglePasswordVisibility('current')}
-                  style={{
-                    position: 'absolute',
-                    right: '0.5rem',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    background: 'none',
-                    border: 'none',
-                    color: '#aaa',
-                    cursor: 'pointer',
-                    padding: '0.5rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                  aria-label={showPassword.current ? 'Ocultar senha' : 'Mostrar senha'}
-                >
-                  {showPassword.current ? <FaEyeSlash /> : <FaEye />}
-                </button>
-                {passwordErrors.currentPassword && (
-                  <div style={{
-                    color: '#ff6b6b',
-                    fontSize: '0.85rem',
-                    marginTop: '0.3rem',
-                    minHeight: '1.2rem',
-                    display: 'block'
-                  }}>{passwordErrors.currentPassword}</div>
-                )}
-              </div>
-              
-              <div style={{ marginBottom: '1.5rem', position: 'relative' }}>
-                <FaLock style={{
-                  position: 'absolute',
-                  left: '1rem',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: '#aaa'
-                }} />
-                <input
-                  type={showPassword.new ? 'text' : 'password'}
-                  name="newPassword"
-                  placeholder="Nova senha"
-                  value={passwordData.newPassword}
-                  onChange={handlePasswordChange}
-                  style={{
-                    width: '100%',
-                    padding: '0.8rem 1rem 0.8rem 2.5rem',
-                    borderRadius: '4px',
-                    border: '1px solid #555',
-                    backgroundColor: '#444',
-                    color: '#fff',
-                    fontSize: '0.95rem',
-                    transition: 'all 0.2s ease-in-out',
-                    boxSizing: 'border-box',
-                    paddingRight: '2.5rem'
-                  }}
-                  autoComplete="new-password"
-                />
-                <button 
-                  type="button" 
-                  onClick={() => togglePasswordVisibility('new')}
-                  style={{
-                    position: 'absolute',
-                    right: '0.5rem',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    background: 'none',
-                    border: 'none',
-                    color: '#aaa',
-                    cursor: 'pointer',
-                    padding: '0.5rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                  aria-label={showPassword.new ? 'Ocultar senha' : 'Mostrar senha'}
-                >
-                  {showPassword.new ? <FaEyeSlash /> : <FaEye />}
-                </button>
-                {passwordErrors.newPassword && (
-                  <div style={{
-                    color: '#ff6b6b',
-                    fontSize: '0.85rem',
-                    marginTop: '0.3rem',
-                    minHeight: '1.2rem',
-                    display: 'block'
-                  }}>{passwordErrors.newPassword}</div>
-                )}
-              </div>
-              
-              <div style={{ marginBottom: '1.5rem', position: 'relative' }}>
-                <FaLock style={{
-                  position: 'absolute',
-                  left: '1rem',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: '#aaa'
-                }} />
-                <input
-                  type={showPassword.confirm ? 'text' : 'password'}
-                  name="confirmPassword"
-                  placeholder="Confirme a nova senha"
-                  value={passwordData.confirmPassword}
-                  onChange={handlePasswordChange}
-                  style={{
-                    width: '100%',
-                    padding: '0.8rem 1rem 0.8rem 2.5rem',
-                    borderRadius: '4px',
-                    border: '1px solid #555',
-                    backgroundColor: '#444',
-                    color: '#fff',
-                    fontSize: '0.95rem',
-                    transition: 'all 0.2s ease-in-out',
-                    boxSizing: 'border-box',
-                    paddingRight: '2.5rem'
-                  }}
-                  autoComplete="new-password"
-                />
-                <button 
-                  type="button" 
-                  onClick={() => togglePasswordVisibility('confirm')}
-                  style={{
-                    position: 'absolute',
-                    right: '0.5rem',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    background: 'none',
-                    border: 'none',
-                    color: '#aaa',
-                    cursor: 'pointer',
-                    padding: '0.5rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                  aria-label={showPassword.confirm ? 'Ocultar senha' : 'Mostrar senha'}
-                >
-                  {showPassword.confirm ? <FaEyeSlash /> : <FaEye />}
-                </button>
-                {passwordErrors.confirmPassword && (
-                  <div style={{
-                    color: '#ff6b6b',
-                    fontSize: '0.85rem',
-                    marginTop: '0.3rem',
-                    minHeight: '1.2rem',
-                    display: 'block'
-                  }}>{passwordErrors.confirmPassword}</div>
-                )}
-              </div>
-              
-              <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center', width: '100%' }}>
-                <button 
-                  type="submit" 
-                  disabled={loading}
-                  style={{
-                    backgroundColor: '#4dabf7',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '4px',
-                    fontSize: '0.95rem',
-                    fontWeight: '500',
-                    cursor: 'pointer',
-                    padding: '0.5rem 1.25rem',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    opacity: loading ? 0.7 : 1,
-                    transition: 'all 0.2s ease-in-out',
-                    ':hover': {
-                      backgroundColor: '#3b8fd9',
-                      transform: 'translateY(-1px)'
-                    },
-                    ':active': {
-                      transform: 'translateY(0)'
-                    }
-                  }}
-                >
-                  {loading ? (
-                    <>
-                      <span style={{
-                        display: 'inline-block',
-                        width: '1rem',
-                        height: '1rem',
-                        border: '2px solid rgba(255, 255, 255, 0.3)',
-                        borderRadius: '50%',
-                        borderTopColor: '#fff',
-                        animation: 'spin 1s ease-in-out infinite',
-                        marginRight: '0.5rem'
-                      }}></span>
-                      Salvando...
-                    </>
-                  ) : (
-                    <>
-                      <FaSave />
-                      <span>Alterar Senha</span>
-                    </>
-                  )}
+                  {loading ? 'Alterando...' : 'Alterar Senha'}
                 </button>
               </div>
             </form>
