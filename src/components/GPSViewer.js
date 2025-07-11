@@ -514,8 +514,8 @@ const GPSViewer = () => {
         doc.setFillColor(248, 249, 250);
         
         // Adiciona o cabeçalho
-        doc.setFontSize(10);
-        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(9); 
+        doc.setTextColor(120, 120, 120); 
         doc.text(`Documento: ${formData._documentId || 'N/A'}`, margin, 15);
         doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, pageWidth - margin, 15, { align: 'right' });
         
@@ -542,22 +542,22 @@ const GPSViewer = () => {
         
         // Adiciona os dados em formato de tabela
         autoTable(doc, {
-          startY: 40, // Tabela mais para cima
+          startY: 40.6, 
           head: [['Campo', 'Valor']],
           body: tableData.map(item => [item.field, item.value]),
-          margin: { top: 10, right: margin, bottom: 10, left: margin },
+          margin: { top: 10.15, right: margin, bottom: 20.3, left: margin }, // Ajustes proporcionais
           didDrawCell: function(data) {
             // Se for a célula do código de barras e tivermos o código
             if (data.cell.raw === '' && dadosProcessados.codigoBarras) {
               try {
                 // Gera o código de barras com escala maior para aumentar a largura
-                const barcodeDataUrl = generateBarcode(dadosProcessados.codigoBarras, 1.5, 25);
+                const barcodeDataUrl = generateBarcode(dadosProcessados.codigoBarras, 1.5, 25)
                 
                 // Ajusta o tamanho e posição do código de barras
-                const barcodeHeight = 15; // Altura reduzida para caber melhor
-                const barcodeWidth = data.cell.width - 16; // Largura com margem menor
-                const barcodeX = data.cell.x + 8; // Margem esquerda reduzida
-                const barcodeY = data.cell.y + 3; // Posição mais alta
+                const barcodeHeight = 15.23; 
+                const barcodeWidth = data.cell.width - 16.24; 
+                const barcodeX = data.cell.x + 8.12; 
+                const barcodeY = data.cell.y + 3.05; 
                 
                 // Adiciona a imagem do código de barras centralizada
                 doc.addImage(
@@ -594,10 +594,10 @@ const GPSViewer = () => {
             }
           },
           styles: {
-            fontSize: 10,
-            cellPadding: 6,
+            fontSize: 10.15, // Aumento adicional de 0.5% (10.1 + 0.5%)
+            cellPadding: 6.09, // Aumento adicional de 0.5% (6.06 + 0.5%)
             // Altura adequada para o código de barras e número
-            cellHeight: 50,
+            cellHeight: 50.75, // Aumento adicional de 0.5% (50.5 + 0.5%)
             cellWidth: 'wrap',
             overflow: 'linebreak',
             lineColor: [200, 200, 200],
@@ -622,6 +622,143 @@ const GPSViewer = () => {
             fillColor: [245, 245, 245]
           }
         });
+        
+        // Adiciona o aviso legal abaixo da tabela
+        let currentY = doc.lastAutoTable.finalY + 20;
+        
+        // Título principal
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+        doc.setTextColor(44, 62, 80);
+        doc.text('AVISO LEGAL', margin, currentY);
+        currentY += 6;  // Espaço após título principal
+        
+        // Texto introdutório
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(60, 60, 60);
+        doc.text('Os códigos de barras exibidos nesta plataforma são simulações técnicas criadas pelo sistema Quackontador, destinadas exclusivamente para:', margin, currentY, { maxWidth: 190 });
+        currentY += 6;  // Espaço após texto introdutório
+        
+        // Finalidades
+        const purposes = [
+            '- Fins educacionais;',
+            '- Testes de software;',
+            '- Demonstrações de funcionamento.'
+        ];
+        
+        purposes.forEach(item => {
+            doc.text(item, margin + 5, currentY);
+            currentY += 4;  // Espaço entre itens da lista
+        });
+        
+        currentY += 4;  // Espaço após seção de finalidades
+        
+        // Seção de restrições
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(200, 0, 0);
+        doc.text('Restrições de Uso:', margin, currentY);
+        currentY += 4;  // Espaço após título da seção
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(60, 60, 60);
+        doc.text('É expressamente proibido:', margin, currentY);
+        currentY += 4;  // Espaço após texto introdutório da seção
+        
+        const restrictions = [
+            '- Utilizar estes códigos para pagamentos ou transações reais;',
+            '- Apresentá-los em documentos fiscais ou declarações oficiais;',
+            '- Qualquer uso que implique representação de valor fiscal.'
+        ];
+        
+        restrictions.forEach(item => {
+            doc.text(item, margin + 5, currentY);
+            currentY += 4;  // Espaço entre itens da lista
+        });
+        
+        currentY += 4;  // Espaço após seção de restrições
+        
+        // Seção de validade legal
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(44, 62, 80);
+        doc.text('Validade Legal:', margin, currentY);
+        currentY += 4;  // Espaço após título da seção
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(60, 60, 60);
+        doc.text('Os códigos de barras não possuem qualquer validade perante:', margin, currentY);
+        currentY += 4;  // Espaço após texto introdutório da seção
+        
+        const validityItems = [
+            '- Receita Federal do Brasil;',
+            '- Instituto Nacional do Seguro Social - INSS;',
+            '- Instituições financeiras.'
+        ];
+        
+        validityItems.forEach(item => {
+            doc.text(item, margin + 5, currentY);
+            currentY += 4;  // Espaço entre itens da lista
+        });
+        
+        currentY += 4;  // Espaço após seção de validade legal
+        
+        // Seção de canal oficial
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(44, 62, 80);
+        doc.text('Canal Oficial:', margin, currentY);
+        currentY += 4;  // Espaço após título da seção
+        
+        // Texto com link inline
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(60, 60, 60);
+        const textBeforeLink = 'Para geração de códigos de barras válidos, acesse o Sistema de Acréscimo Legal - RFB: ';
+        const linkText = 'https://sal.rfb.gov.br/home';
+        
+        // Calcular largura do texto antes do link
+        const textWidth = doc.getTextWidth(textBeforeLink);
+        
+        // Desenhar texto antes do link
+        doc.text(textBeforeLink, margin, currentY);
+        
+        // Desenhar link com espaço extra
+        const spaceWidth = doc.getTextWidth(' ');
+        // Primeiro define a fonte em negrito e sublinhado
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(0, 0, 255);
+        // Desenha o link com sublinhado manual
+        const textOptions = { 
+            url: linkText,
+            renderingMode: 'fill',
+            textDecoration: 'underline'
+        };
+        doc.textWithLink(linkText, margin + textWidth + spaceWidth, currentY, textOptions);
+        
+        currentY += 7;  // Espaço após a linha
+        
+        // Nota final - posicionada mais próxima do rodapé
+        const footerY = doc.internal.pageSize.height - 15; // Posição fixa do rodapé
+        const notaFinalY = footerY - 3; 
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(200, 0, 0);
+        doc.text('O Quackontador não se responsabiliza pelo uso indevido destas simulações.', margin, notaFinalY);
+        
+        // Linha do rodapé
+        doc.setDrawColor(220, 220, 220);
+        doc.setLineWidth(0.5);
+        doc.line(margin, footerY, doc.internal.pageSize.width - margin, footerY);
+        
+        // Textos do rodapé
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(6.3); 
+        doc.setTextColor(120, 120, 120);
+        doc.text('Documento gerado em ' + new Date().toLocaleString('pt-BR'), margin, footerY + 5);
+        doc.text('Quackontador © ' + new Date().getFullYear(), doc.internal.pageSize.width - margin, footerY + 5, { align: 'right' });
+        
+        // Garante que o conteúdo não fique por baixo do rodapé
+        currentY = footerY + 15;
+        
+        
         // Gera o blob do PDF
         const pdfBlob = doc.output('blob');
         const pdfUrl = URL.createObjectURL(pdfBlob);
