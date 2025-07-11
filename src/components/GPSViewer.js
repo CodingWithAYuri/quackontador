@@ -152,22 +152,23 @@ const styles = {
   pdfContainer: {
     flex: 1,
     display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'flex-start',
+    flexDirection: 'column',
     backgroundColor: '#333',
     position: 'relative',
     overflow: 'auto',
-    padding: '10px 0',
+    margin: '1rem',
+    borderRadius: '8px',
+    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+    alignItems: 'center',
   },
   iframe: {
-    width: '95%',
+    width: '100%',
     maxWidth: '800px',
-    height: 'calc(100vh - 100px)',
+    height: 'calc(100vh - 80px)',
     minHeight: '500px',
     border: 'none',
-    backgroundColor: '#333',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
-    borderRadius: '4px',
+    backgroundColor: '#fff',
+    margin: '0 auto',
   },
   loadingContainer: {
     position: 'absolute',
@@ -210,6 +211,29 @@ const GPSViewer = () => {
   const pdfRef = useRef(null);
   const isMountedRef = useRef(true);
   const pdfBlobUrlRef = useRef(null);
+
+  // Funções de manipulação
+  const handleGoBack = useCallback(() => {
+    window.history.back();
+  }, []);
+
+  const handleDownloadPDF = useCallback(() => {
+    if (!state.pdfUrl) return;
+    const link = document.createElement('a');
+    link.href = state.pdfUrl;
+    link.download = `GPS-${state.documentId || 'documento'}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }, [state.pdfUrl, state.documentId]);
+
+  const handlePrint = useCallback(() => {
+    if (!state.pdfUrl) return;
+    const printWindow = window.open(state.pdfUrl, '_blank');
+    printWindow.onload = () => {
+      printWindow.print();
+    };
+  }, [state.pdfUrl]);
 
   // Função para formatar data no padrão brasileiro (dd/mm/yyyy)
   const formatarDataBrasileira = (dataString) => {
@@ -889,11 +913,109 @@ const GPSViewer = () => {
     };
   }, [loadData, isFormDataValid]);
 
+  // Estilos para a barra de ferramentas
+  const toolbarStyles = {
+    container: {
+      backgroundColor: '#333',
+      padding: '0 0.75rem',
+      display: 'flex',
+      justifyContent: 'flex-end',
+      alignItems: 'center',
+      gap: '0.5rem',
+      width: '100%',
+      maxWidth: '800px',
+      height: '32px',
+    },
+    button: {
+      backgroundColor: 'transparent',
+      border: 'none',
+      borderRadius: '4px',
+      padding: '0',
+      color: '#fff',
+      cursor: 'pointer',
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '24px',
+      height: '24px',
+      transition: 'all 0.2s',
+      fontSize: '0.9em',
+      ':hover': {
+        backgroundColor: '#444',
+      },
+    },
+    buttonPrimary: {
+      backgroundColor: '#3a7bd5',
+      color: 'white',
+      ':hover': {
+        backgroundColor: '#2c5fb3',
+      },
+    },
+  };
+
   // Renderização
   return (
     <div style={styles.pageContainer}>
       {/* Container do PDF */}
       <div style={styles.pdfContainer}>
+        {/* Barra de ferramentas */}
+        <div style={toolbarStyles.container}>
+          <div style={{ display: 'flex', gap: '0.5rem', marginLeft: '0.5rem' }}>
+            <button 
+              onClick={handleGoBack}
+              style={{
+                ...toolbarStyles.button,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '0 12px',
+                cursor: 'pointer'
+              }}
+              title="Voltar"
+            >
+              <svg 
+                width="22" 
+                height="18" 
+                viewBox="0 0 28 24" 
+                fill="none" 
+                stroke="#4a90e2" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+                style={{
+                  marginRight: '6px',
+                  flexShrink: 0
+                }}
+              >
+                <line x1="23" y1="12" x2="3" y2="12"></line>
+                <polyline points="14 21 3 12 14 3"></polyline>
+              </svg>
+              <span style={{
+                fontSize: '0.85em',
+                whiteSpace: 'nowrap'
+              }}>Voltar</span>
+            </button>
+          </div>
+          <div style={{ flex: 1 }} />
+          <div style={{ display: 'flex', gap: '0.5rem', marginRight: '0.5rem' }}>
+            <button 
+              onClick={handlePrint}
+              style={toolbarStyles.button}
+              title="Imprimir"
+            >
+              <span>🖨️</span>
+            </button>
+            <button 
+              onClick={handleDownloadPDF}
+              style={{...toolbarStyles.button, ...toolbarStyles.buttonPrimary}}
+              title="Baixar PDF"
+            >
+              <span>💾</span>
+            </button>
+          </div>
+        </div>
+        
+        {/* Conteúdo do PDF */}
         {state.error ? (
           <div style={styles.errorContainer}>
             <h3>Erro ao carregar o documento</h3>
