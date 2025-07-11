@@ -523,17 +523,16 @@ const GPSViewer = () => {
         doc.setFontSize(16);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(0, 0, 0);
-        doc.text('COMPROVANTE DE PAGAMENTO - GPS', pageWidth / 2, 30, { align: 'center' });
+        doc.text('GUIA DA PREVIDÊNCIA SOCIAL - GPS', pageWidth / 2, 30, { align: 'center' });
         
         // Tabela de dados do contribuinte
         const tableData = [
           { field: 'Nome Completo', value: dadosProcessados.nome || 'Não informado' },
-          { field: 'CPF', value: dadosProcessados.cpf ? dadosProcessados.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') : 'Não informado' },
-          { field: 'Data de Nascimento', value: dadosProcessados.dataNascimento ? formatarDataBrasileira(dadosProcessados.dataNascimento) : 'Não informada' },
           { field: 'NIT/PIS/PASEP', value: dadosProcessados.nit || 'Não informado' },
-          { field: 'Valor Total', value: dadosProcessados.valor ? `R$ ${parseFloat(dadosProcessados.valor).toFixed(2).replace('.', ',')}` : 'Não informado' },
+          { field: 'Código de Pagamento', value: '1406' },
           { field: 'Competência', value: dadosProcessados.competencia || 'Não informada' },
           { field: 'Data de Vencimento', value: dadosProcessados.dataVencimento ? formatarDataBrasileira(dadosProcessados.dataVencimento) : 'Não informada' },
+          { field: 'Valor Total', value: dadosProcessados.valor ? `R$ ${parseFloat(dadosProcessados.valor).toFixed(2).replace('.', ',')}` : 'Não informado' },
           { 
             field: 'Código de Barras', 
             value: dadosProcessados.codigoBarras ? '' : 'Não gerado',
@@ -543,7 +542,7 @@ const GPSViewer = () => {
         
         // Adiciona os dados em formato de tabela
         autoTable(doc, {
-          startY: 50, // Posição ajustada
+          startY: 40, // Tabela mais para cima
           head: [['Campo', 'Valor']],
           body: tableData.map(item => [item.field, item.value]),
           margin: { top: 10, right: margin, bottom: 10, left: margin },
