@@ -539,11 +539,13 @@ const GuiaGPS = () => {
   };
 
   // Gera o PDF da guia GPS e abre em uma nova aba
-  const gerarGPS = async (e) => {
-    console.log('gerarGPS chamado');
+  // @param {Event} e - Evento do formulário (opcional)
+  // @param {boolean} autoPrint - Define se deve imprimir automaticamente (padrão: false)
+  const gerarGPS = async (e, autoPrint = false) => {
+    console.log('gerarGPS chamado', { autoPrint });
     
     // Previne o comportamento padrão do evento se existir
-    if (e) {
+    if (e && e.preventDefault) {
       e.preventDefault();
       e.stopPropagation();
     }
@@ -569,7 +571,8 @@ const GuiaGPS = () => {
       const gpsData = {
         ...formData,
         dataVencimento: calcularVencimento(formData.competencia),
-        valor: parseFloat(formData.valor.replace(/\./g, '').replace(',', '.')) || 0
+        valor: formData.valor !== undefined && formData.valor !== null ? 
+          parseFloat(String(formData.valor).replace(/\./g, '').replace(',', '.')) : 0
       };
 
       // Gera um ID único para o documento
@@ -595,20 +598,62 @@ const GuiaGPS = () => {
       // Salva os dados no sessionStorage como fallback
       sessionStorage.setItem('gpsData', JSON.stringify(dataToSave));
       console.log('Dados salvos no sessionStorage');
-
-      // Navega para a rota GPSViewer, passando os dados no estado
-      navigate('/gps-viewer', { 
-        state: dataToSave,
-        replace: true
+      
+      // Importa o componente GPSViewer e suas funções exportadas
+      import('./GPSViewer').then(async (GPSViewerModule) => {
+        try {
+          const { exportedFunctions } = GPSViewerModule;
+          
+          if (!exportedFunctions || !exportedFunctions.generatePDF) {
+            throw new Error('Função de geração de PDF não encontrada');
+          }
+          
+          // Gera o PDF diretamente usando a função do GPSViewer
+          const pdfResult = await exportedFunctions.generatePDF(dataToSave.formData);
+          
+          // Abre o PDF em uma nova aba
+          const printWindow = window.open(pdfResult.url, '_blank');
+          if (printWindow) {
+            // Se autoPrint for true, inicia a impressão automaticamente quando o PDF carregar
+            if (autoPrint) {
+              printWindow.onload = () => {
+                printWindow.print();
+              };
+            }
+          } else {
+            // Se o navegador bloqueou o popup, mostra uma mensagem para o usuário
+            alert('Por favor, permita popups para visualizar o GPS');
+          }
+          
+          setCarregando(false);
+        } catch (error) {
+          console.error('Erro ao gerar PDF diretamente:', error);
+          
+          // Fallback: navega para o GPSViewer se não conseguir gerar o PDF diretamente
+          navigate('/gps-viewer', { 
+            state: dataToSave,
+            replace: true
+          });
+          
+          // Fecha o loading após um pequeno delay
+          setTimeout(() => {
+            setCarregando(false);
+          }, 1000);
+        }
+      }).catch(error => {
+        console.error('Erro ao importar GPSViewer:', error);
+        
+        // Fallback: navega para o GPSViewer se não conseguir importar o módulo
+        navigate('/gps-viewer', { 
+          state: dataToSave,
+          replace: true
+        });
+        
+        // Fecha o loading após um pequeno delay
+        setTimeout(() => {
+          setCarregando(false);
+        }, 1000);
       });
-      
-      console.log('Navegando para GPSViewer com dados:', dataToSave);
-      
-      // Fecha o loading após um pequeno delay
-      setTimeout(() => {
-        setCarregando(false);
-      }, 1000);
-      
     } catch (error) {
       console.error('Erro ao gerar GPS:', error);
       setErro(`Ocorreu um erro ao gerar o GPS: ${error.message}. Por favor, tente novamente.`);
@@ -887,7 +932,7 @@ const GuiaGPS = () => {
               <Button 
                 id="gerarGPSButton"
                 variant="primary" 
-                onClick={gerarGPS}
+                onClick={(e) => gerarGPS(e, false)}
                 disabled={carregando}
                 style={{ 
                   ...styles.button, 

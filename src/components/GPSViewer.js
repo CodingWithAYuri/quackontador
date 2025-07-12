@@ -3,6 +3,99 @@ import { Spinner } from 'react-bootstrap';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
+// Função para formatar data no padrão brasileiro (dd/mm/yyyy)
+const formatarDataBrasileira = (dataString) => {
+  console.log('Data original:', dataString);
+  if (!dataString) return '';
+  
+  // Se já estiver no formato brasileiro, retorna como está
+  if (typeof dataString === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(dataString)) {
+    return dataString;
+  }
+  
+  // Se estiver no formato ISO (YYYY-MM-DD)
+  if (typeof dataString === 'string' && /^\d{4}-\d{2}-\d{2}/.test(dataString)) {
+    const [ano, mes, dia] = dataString.split('T')[0].split('-');
+    return `${dia}/${mes}/${ano}`;
+  }
+  
+  // Se for um objeto Date ou timestamp
+  const data = new Date(dataString);
+  if (!isNaN(data.getTime())) {
+    const dia = String(data.getDate()).padStart(2, '0');
+    const mes = String(data.getMonth() + 1).padStart(2, '0');
+    const ano = data.getFullYear();
+    return `${dia}/${mes}/${ano}`;
+  }
+  
+  console.error('Formato de data não suportado:', dataString);
+  return dataString; // Retorna o valor original se não for um formato reconhecido
+};
+
+// Função para calcular o 15º dia útil do mês seguinte à competência
+const calcularDataVencimento = (competencia) => {
+  try {
+    if (!competencia) return null;
+    
+    // Extrai mês e ano da competência (formato MM/YYYY)
+    const [mes, ano] = competencia.split('/');
+    
+    if (!mes || !ano) return null;
+    
+    // Converte para números
+    const mesNum = parseInt(mes, 10);
+    const anoNum = parseInt(ano, 10);
+    
+    if (isNaN(mesNum) || isNaN(anoNum)) return null;
+    
+    // Mês seguinte ao da competência (para o qual queremos o 15º dia útil)
+    // Mês em JavaScript é 0-indexed, então mesNum já é o valor correto para o mês seguinte
+    const mesSeguinte = mesNum === 12 ? 1 : mesNum + 1;
+    const anoSeguinte = mesNum === 12 ? anoNum + 1 : anoNum;
+    
+    // Cria uma data para o primeiro dia do mês seguinte
+    const primeiroDiaMesSeguinte = new Date(anoSeguinte, mesSeguinte - 1, 1);
+    
+    // Feriados nacionais fixos (para simplificar, consideramos apenas os principais)
+    const feriadosNacionais = [
+      `01/01/${anoSeguinte}`, // Ano Novo
+      `21/04/${anoSeguinte}`, // Tiradentes
+      `01/05/${anoSeguinte}`, // Dia do Trabalho
+      `07/09/${anoSeguinte}`, // Independência
+      `12/10/${anoSeguinte}`, // Nossa Senhora Aparecida
+      `02/11/${anoSeguinte}`, // Finados
+      `15/11/${anoSeguinte}`, // Proclamação da República
+      `25/12/${anoSeguinte}`  // Natal
+    ];
+    
+    // Contador de dias úteis
+    let diasUteis = 0;
+    let dataAtual = new Date(primeiroDiaMesSeguinte);
+    
+    // Loop até encontrar o 15º dia útil
+    while (diasUteis < 15) {
+      // Verifica se é dia útil (não é sábado, domingo ou feriado)
+      const diaSemana = dataAtual.getDay();
+      const dataFormatada = `${String(dataAtual.getDate()).padStart(2, '0')}/${String(dataAtual.getMonth() + 1).padStart(2, '0')}/${dataAtual.getFullYear()}`;
+      
+      // 0 = domingo, 6 = sábado
+      if (diaSemana !== 0 && diaSemana !== 6 && !feriadosNacionais.includes(dataFormatada)) {
+        diasUteis++;
+      }
+      
+      // Se ainda não chegamos ao 15º dia útil, avança para o próximo dia
+      if (diasUteis < 15) {
+        dataAtual.setDate(dataAtual.getDate() + 1);
+      }
+    }
+    
+    return dataAtual;
+  } catch (error) {
+    console.error('Erro ao calcular data de vencimento:', error);
+    return null;
+  }
+};
+
 // Função para gerar um código de barras CODE128
 const generateBarcode = (text, scale = 2, height = 50) => {
   // Tabela de caracteres CODE128 (simplificada para números e letras maiúsculas)
@@ -235,98 +328,9 @@ const GPSViewer = () => {
     };
   }, [state.pdfUrl]);
 
-  // Função para formatar data no padrão brasileiro (dd/mm/yyyy)
-  const formatarDataBrasileira = (dataString) => {
-    console.log('Data original:', dataString);
-    if (!dataString) return '';
-    
-    // Se já estiver no formato brasileiro, retorna como está
-    if (typeof dataString === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(dataString)) {
-      return dataString;
-    }
-    
-    // Se estiver no formato ISO (YYYY-MM-DD)
-    if (typeof dataString === 'string' && /^\d{4}-\d{2}-\d{2}/.test(dataString)) {
-      const [ano, mes, dia] = dataString.split('T')[0].split('-');
-      return `${dia}/${mes}/${ano}`;
-    }
-    
-    // Se for um objeto Date ou timestamp
-    const data = new Date(dataString);
-    if (!isNaN(data.getTime())) {
-      const dia = String(data.getDate()).padStart(2, '0');
-      const mes = String(data.getMonth() + 1).padStart(2, '0');
-      const ano = data.getFullYear();
-      return `${dia}/${mes}/${ano}`;
-    }
-    
-    console.error('Formato de data não suportado:', dataString);
-    return dataString; // Retorna o valor original se não for um formato reconhecido
-  };
-
-  // Função para calcular o 15º dia útil do mês seguinte à competência
-  const calcularDataVencimento = (competencia) => {
-    try {
-      if (!competencia) return null;
-      
-      // Extrai mês e ano da competência (formato MM/YYYY)
-      const [mes, ano] = competencia.split('/');
-      
-      if (!mes || !ano) return null;
-      
-      // Converte para números
-      const mesNum = parseInt(mes, 10);
-      const anoNum = parseInt(ano, 10);
-      
-      if (isNaN(mesNum) || isNaN(anoNum)) return null;
-      
-      // Mês seguinte ao da competência (para o qual queremos o 15º dia útil)
-      // Mês em JavaScript é 0-indexed, então mesNum já é o valor correto para o mês seguinte
-      const mesSeguinte = mesNum === 12 ? 1 : mesNum + 1;
-      const anoSeguinte = mesNum === 12 ? anoNum + 1 : anoNum;
-      
-      // Cria uma data para o primeiro dia do mês seguinte
-      const primeiroDiaMesSeguinte = new Date(anoSeguinte, mesSeguinte - 1, 1);
-      
-      // Feriados nacionais fixos (para simplificar, consideramos apenas os principais)
-      const feriadosNacionais = [
-        `01/01/${anoSeguinte}`, // Ano Novo
-        `21/04/${anoSeguinte}`, // Tiradentes
-        `01/05/${anoSeguinte}`, // Dia do Trabalho
-        `07/09/${anoSeguinte}`, // Independência
-        `12/10/${anoSeguinte}`, // Nossa Senhora Aparecida
-        `02/11/${anoSeguinte}`, // Finados
-        `15/11/${anoSeguinte}`, // Proclamação da República
-        `25/12/${anoSeguinte}`  // Natal
-      ];
-      
-      // Contador de dias úteis
-      let diasUteis = 0;
-      let dataAtual = new Date(primeiroDiaMesSeguinte);
-      
-      // Loop até encontrar o 15º dia útil
-      while (diasUteis < 15) {
-        // Verifica se é dia útil (não é sábado, domingo ou feriado)
-        const diaSemana = dataAtual.getDay();
-        const dataFormatada = `${String(dataAtual.getDate()).padStart(2, '0')}/${String(dataAtual.getMonth() + 1).padStart(2, '0')}/${dataAtual.getFullYear()}`;
-        
-        // 0 = domingo, 6 = sábado
-        if (diaSemana !== 0 && diaSemana !== 6 && !feriadosNacionais.includes(dataFormatada)) {
-          diasUteis++;
-        }
-        
-        // Se ainda não chegamos ao 15º dia útil, avança para o próximo dia
-        if (diasUteis < 15) {
-          dataAtual.setDate(dataAtual.getDate() + 1);
-        }
-      }
-      
-      return dataAtual;
-    } catch (error) {
-      console.error('Erro ao calcular data de vencimento:', error);
-      return null;
-    }
-  };
+  // Referências para as funções movidas para fora do componente
+  const formatarDataBrasileira = (dataString) => window.formatarDataBrasileira(dataString);
+  const calcularDataVencimento = (competencia) => window.calcularDataVencimento(competencia);
   
   // Função para gerar o código de barras da GPS conforme regras da FEBRABAN
   const gerarCodigoBarrasGPS = (formData) => {
@@ -1064,5 +1068,376 @@ const GPSViewer = () => {
     </div>
   );
 };
+
+// Mover a função gerarCodigoBarrasGPS para fora do componente
+const gerarCodigoBarrasGPS = (formData) => {
+  try {
+    if (!formData || !formData.valor || !formData.competencia || !formData.cpf) {
+      return null;
+    }
+    
+    // Extrai os dados necessários
+    const valor = parseFloat(formData.valor).toFixed(2).replace('.', '');
+    const valorFormatado = valor.padStart(10, '0'); // Valor com 10 dígitos
+    
+    // Extrai mês e ano da competência (formato MM/YYYY)
+    const [mes, ano] = formData.competencia.split('/');
+    const competenciaNum = `${ano}${mes.padStart(2, '0')}`; // Formato YYYYMM
+    
+    // Código de receita padrão para GPS (16 = INSS)
+    const codigoReceita = '16';
+    
+    // Identificador do contribuinte (CPF)
+    const cpf = formData.cpf.replace(/\D/g, '');
+    
+    // Monta o código de barras no formato FEBRABAN para GPS
+    const banco = '858'; // Código fixo para GPS
+    const moedaSegmento = '990'; // 9 = Real, 9 = Segmento Arrecadação, 0 = forma
+    
+    // Monta o código sem o dígito verificador
+    const codigoSemDV = `${banco}${moedaSegmento}${valorFormatado}${competenciaNum}${codigoReceita}${cpf.padStart(14, '0')}`;
+    
+    // Calcula o dígito verificador (módulo 11)
+    let soma = 0;
+    let peso = 2;
+    
+    for (let i = codigoSemDV.length - 1; i >= 0; i--) {
+      soma += parseInt(codigoSemDV.charAt(i), 10) * peso;
+      peso = peso === 9 ? 2 : peso + 1;
+    }
+    
+    const resto = soma % 11;
+    const dv = resto === 0 || resto === 1 ? 0 : 11 - resto;
+    
+    // Insere o dígito verificador na posição correta
+    const codigoCompleto = `${banco}${moedaSegmento}${dv}${valorFormatado}${competenciaNum}${codigoReceita}${cpf.padStart(14, '0')}`;
+    
+    // Formata o código de barras para exibição (grupos de 5 dígitos)
+    const codigoFormatado = codigoCompleto.match(/.{1,5}/g).join(' ');
+    
+    return {
+      codigo: codigoCompleto,
+      codigoFormatado: codigoFormatado
+    };
+  } catch (error) {
+    console.error('Erro ao gerar código de barras:', error);
+    return null;
+  }
+};
+
+// Função para gerar o PDF (versão exportável)
+const generatePDFExportable = async (formData) => {
+  try {
+    console.log('Iniciando geração do PDF...');
+    
+    // Processa os dados do formulário
+    const dadosProcessados = { ...formData };
+    
+    // Calcula a data de vencimento (15º dia útil do mês seguinte)
+    if (formData.competencia && !formData.dataVencimento) {
+      const dataVencimento = calcularDataVencimento(formData.competencia);
+      if (dataVencimento) {
+        dadosProcessados.dataVencimento = dataVencimento;
+      }
+    }
+    
+    // Gera o código de barras
+    const codigoBarras = gerarCodigoBarrasGPS(dadosProcessados);
+    if (codigoBarras) {
+      dadosProcessados.codigoBarras = codigoBarras.codigo;
+      dadosProcessados.codigoBarrasFormatado = codigoBarras.codigoFormatado;
+    }
+    
+    // Cria um novo documento PDF
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+    });
+
+    // Configurações iniciais
+    const margin = 15;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const generatedAt = new Date().toISOString();
+    
+    // Define a cor de fundo da página
+    doc.setFillColor(248, 249, 250); // Cor de fundo do tema QuackContador (#f8f9fa)
+    doc.rect(0, 0, pageWidth, pageHeight, 'F');
+    
+    // Define a cor de fundo do conteúdo do PDF
+    doc.setDrawColor(248, 249, 250);
+    doc.setFillColor(248, 249, 250);
+    
+    // Adiciona o cabeçalho
+    doc.setFontSize(9); 
+    doc.setTextColor(120, 120, 120); 
+    doc.text(`Documento: ${formData._documentId || 'N/A'}`, margin, 15);
+    doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, pageWidth - margin, 15, { align: 'right' });
+    
+    // Título do documento
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0);
+    doc.text('GUIA DA PREVIDÊNCIA SOCIAL - GPS', pageWidth / 2, 30, { align: 'center' });
+    
+    // Tabela de dados do contribuinte
+    const tableData = [
+      { field: 'Nome Completo', value: dadosProcessados.nome || 'Não informado' },
+      { field: 'NIT/PIS/PASEP', value: dadosProcessados.nit || 'Não informado' },
+      { field: 'Código de Pagamento', value: '1406' },
+      { field: 'Competência', value: dadosProcessados.competencia || 'Não informada' },
+      { field: 'Data de Vencimento', value: dadosProcessados.dataVencimento ? formatarDataBrasileira(dadosProcessados.dataVencimento) : 'Não informada' },
+      { field: 'Valor Total', value: dadosProcessados.valor ? `R$ ${parseFloat(dadosProcessados.valor).toFixed(2).replace('.', ',')}` : 'Não informado' },
+      { 
+        field: 'Código de Barras', 
+        value: dadosProcessados.codigoBarras ? '' : 'Não gerado',
+        isBarcode: true
+      }
+    ];
+    
+    // Adiciona os dados em formato de tabela
+    autoTable(doc, {
+      startY: 40.6, 
+      head: [['Campo', 'Valor']],
+      body: tableData.map(item => [item.field, item.value]),
+      margin: { top: 10.15, right: margin, bottom: 20.3, left: margin },
+      didDrawCell: function(data) {
+        // Se for a célula do código de barras e tivermos o código
+        if (data.cell.raw === '' && dadosProcessados.codigoBarras) {
+          try {
+            // Gera o código de barras
+            const barcodeDataUrl = generateBarcode(dadosProcessados.codigoBarras, 1.5, 25);
+            
+            // Ajusta o tamanho e posição do código de barras
+            const barcodeHeight = 15.23; 
+            const barcodeWidth = data.cell.width - 16.24; 
+            const barcodeX = data.cell.x + 8.12; 
+            const barcodeY = data.cell.y + 3.05; 
+            
+            // Adiciona a imagem do código de barras centralizada
+            doc.addImage(
+              barcodeDataUrl, 
+              'PNG', 
+              barcodeX, 
+              barcodeY, 
+              barcodeWidth, 
+              barcodeHeight
+            );
+            
+            // Adiciona o código numérico formatado abaixo do código de barras
+            if (dadosProcessados.codigoBarras) {
+              // Formata o código numérico em grupos para melhor legibilidade
+              const codigoFormatado = dadosProcessados.codigoBarras.replace(/(\d{4})(?=\d)/g, '$1 ');
+              
+              doc.setFontSize(8);
+              doc.setFont('helvetica', 'normal');
+              doc.setTextColor(0, 0, 0); // Texto preto
+              doc.text(
+                codigoFormatado,
+                data.cell.x + (data.cell.width / 2),
+                barcodeY + barcodeHeight + 5, // Posiciona abaixo do código de barras
+                { align: 'center', lineHeightFactor: 1.2 }
+              );
+            }
+            
+            // Limpa qualquer outro texto que possa aparecer na célula
+            doc.setTextColor(255, 255, 255, 0); // Torna o texto completamente transparente
+            doc.setFontSize(0.1); // Tamanho mínimo possível
+          } catch (error) {
+            console.error('Erro ao gerar código de barras:', error);
+          }
+        }
+      },
+      styles: {
+        fontSize: 10.15,
+        cellPadding: 6.09,
+        cellHeight: 50.75,
+        cellWidth: 'wrap',
+        overflow: 'linebreak',
+        lineColor: [200, 200, 200],
+        lineWidth: 0.1,
+        valign: 'middle',
+        halign: 'left',
+        fillColor: [255, 255, 255],
+        textColor: [0, 0, 0],
+        font: 'helvetica',
+        fontStyle: 'normal',
+        columnWidth: 'auto',
+        rowHeight: 'auto',
+        minCellHeight: 10
+      },
+      headStyles: {
+        fillColor: [41, 128, 185],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        halign: 'center'
+      },
+      alternateRowStyles: {
+        fillColor: [245, 245, 245]
+      }
+    });
+    
+    // Adiciona o aviso legal abaixo da tabela
+    let currentY = doc.lastAutoTable.finalY + 20;
+    
+    // Título principal
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(44, 62, 80);
+    doc.text('AVISO LEGAL', margin, currentY);
+    currentY += 6;  // Espaço após título principal
+    
+    // Texto introdutório
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(60, 60, 60);
+    doc.text('Os códigos de barras exibidos nesta plataforma são simulações técnicas criadas pelo sistema Quackontador, destinadas exclusivamente para:', margin, currentY, { maxWidth: 190 });
+    currentY += 6;  // Espaço após texto introdutório
+    
+    // Finalidades
+    const purposes = [
+      '- Fins educacionais;',
+      '- Testes de software;',
+      '- Demonstrações de funcionamento.'
+    ];
+    
+    purposes.forEach(item => {
+      doc.text(item, margin + 5, currentY);
+      currentY += 4;  // Espaço entre itens da lista
+    });
+    
+    currentY += 4;  // Espaço após seção de finalidades
+    
+    // Seção de restrições
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(200, 0, 0);
+    doc.text('Restrições de Uso:', margin, currentY);
+    currentY += 4;  // Espaço após título da seção
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
+    doc.text('É expressamente proibido:', margin, currentY);
+    currentY += 4;  // Espaço após texto introdutório da seção
+    
+    const restrictions = [
+      '- Utilizar estes códigos para pagamentos ou transações reais;',
+      '- Apresentá-los em documentos fiscais ou declarações oficiais;',
+      '- Qualquer uso que implique representação de valor fiscal.'
+    ];
+    
+    restrictions.forEach(item => {
+      doc.text(item, margin + 5, currentY);
+      currentY += 4;  // Espaço entre itens da lista
+    });
+    
+    currentY += 4;  // Espaço após seção de restrições
+    
+    // Seção de validade legal
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(44, 62, 80);
+    doc.text('Validade Legal:', margin, currentY);
+    currentY += 4;  // Espaço após título da seção
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
+    doc.text('Os códigos de barras não possuem qualquer validade perante:', margin, currentY);
+    currentY += 4;  // Espaço após texto introdutório da seção
+    
+    const validityItems = [
+      '- Receita Federal do Brasil;',
+      '- Instituto Nacional do Seguro Social - INSS;',
+      '- Instituições financeiras.'
+    ];
+    
+    validityItems.forEach(item => {
+      doc.text(item, margin + 5, currentY);
+      currentY += 4;  // Espaço entre itens da lista
+    });
+    
+    currentY += 4;  // Espaço após seção de validade legal
+    
+    // Seção de canal oficial
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(44, 62, 80);
+    doc.text('Canal Oficial:', margin, currentY);
+    currentY += 4;  // Espaço após título da seção
+    
+    // Texto com link inline
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
+    const textBeforeLink = 'Para geração de códigos de barras válidos, acesse o Sistema de Acréscimo Legal - RFB: ';
+    const linkText = 'https://sal.rfb.gov.br/home';
+    
+    // Calcular largura do texto antes do link
+    const textWidth = doc.getTextWidth(textBeforeLink);
+    
+    // Desenhar texto antes do link
+    doc.text(textBeforeLink, margin, currentY);
+    
+    // Desenhar link com espaço extra
+    const spaceWidth = doc.getTextWidth(' ');
+    // Primeiro define a fonte em negrito e sublinhado
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 255);
+    // Desenha o link com sublinhado manual
+    const textOptions = { 
+      url: linkText,
+      renderingMode: 'fill',
+      textDecoration: 'underline'
+    };
+    doc.textWithLink(linkText, margin + textWidth + spaceWidth, currentY, textOptions);
+    
+    currentY += 7;  // Espaço após a linha
+    
+    // Nota final - posicionada mais próxima do rodapé
+    const footerY = doc.internal.pageSize.height - 15; // Posição fixa do rodapé
+    const notaFinalY = footerY - 3; 
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(200, 0, 0);
+    doc.text('O Quackontador não se responsabiliza pelo uso indevido destas simulações.', margin, notaFinalY);
+    
+    // Linha do rodapé
+    doc.setDrawColor(220, 220, 220);
+    doc.setLineWidth(0.5);
+    doc.line(margin, footerY, doc.internal.pageSize.width - margin, footerY);
+    
+    // Textos do rodapé
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(6.3); 
+    doc.setTextColor(120, 120, 120);
+    doc.text('Documento gerado em ' + new Date().toLocaleString('pt-BR'), margin, footerY + 5);
+    doc.text('Quackontador © ' + new Date().getFullYear(), doc.internal.pageSize.width - margin, footerY + 5, { align: 'right' });
+    
+    // Gera o blob do PDF
+    const pdfBlob = doc.output('blob');
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    
+    return {
+      url: pdfUrl,
+      blob: pdfBlob,
+      generatedAt: new Date().toISOString(),
+      formData: dadosProcessados // Retorna os dados processados para uso posterior
+    };
+  } catch (error) {
+    console.error('Erro ao gerar PDF:', error);
+    throw new Error('Não foi possível gerar o PDF. Por favor, tente novamente.');
+  }
+};
+
+// Exporta as funções que serão usadas por outros componentes
+export const exportedFunctions = {
+  generatePDF: generatePDFExportable,
+  gerarCodigoBarrasGPS: gerarCodigoBarrasGPS,
+  formatarDataBrasileira: formatarDataBrasileira,
+  calcularDataVencimento: calcularDataVencimento
+};
+
+// Torna as funções disponíveis globalmente para uso dentro do componente GPSViewer
+if (typeof window !== 'undefined') {
+  window.formatarDataBrasileira = formatarDataBrasileira;
+  window.calcularDataVencimento = calcularDataVencimento;
+}
 
 export default GPSViewer;
