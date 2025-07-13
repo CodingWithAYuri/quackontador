@@ -48,6 +48,187 @@ body {
   --bs-btn-bg: inherit !important; /* herda a cor de fundo do pai */
 }
 
+/* Estilo personalizado para o botão 'Vamos aos cálculos' */
+.custom-hover-button {
+  border-radius: 6px !important; /* Menos arredondado */
+  transition: all 0.2s ease-in-out !important;
+  margin: 0.75rem auto 0;
+  padding: 0.85rem 0.6rem !important; /* Padding horizontal reduzido */
+  color: #fff !important;
+  background-color: transparent !important;
+  border-color: #fff !important;
+  width: auto !important;
+  min-width: 0; /* Remove a largura mínima fixa */
+  white-space: nowrap;
+  display: inline-block;
+  text-align: center;
+  box-sizing: border-box;
+  font-size: 1.32rem !important;
+  line-height: 1.2;
+  font-weight: 400; /* Fonte um pouco mais grossa */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  letter-spacing: 0.5px; /* Espaçamento entre letras levemente aumentado */
+}
+
+.custom-hover-button:hover {
+  color: #000 !important;
+  background-color: #f8f9fa !important;
+  border-color: #f8f9fa !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+.custom-hover-button:active {
+  transform: translateY(0) !important;
+  box-shadow: none !important;
+}
+
+/* Estilo para o botão Cancelar do GuiaGPS */
+button.guia-cancel-button {
+  /* Reset de estilos padrão do botão */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  border: 1px solid #6c757d;
+  margin: 0;
+  padding: 0.6rem 1.25rem;
+  font: inherit;
+  cursor: pointer;
+  outline: inherit;
+  
+  /* Estilos personalizados */
+  font-weight: 500;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  transition: all 0.2s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  min-width: 120px;
+  background-color: transparent;
+  color: #fff;
+  text-decoration: none;
+  box-shadow: none;
+}
+
+/* Hover e estados ativos */
+button.guia-cancel-button:not(:disabled):not(.disabled) {
+  cursor: pointer;
+}
+
+button.guia-cancel-button:hover:not(:disabled):not(.disabled) {
+  background-color: #f8f9fa !important;
+  border-color: #f8f9fa !important;
+  color: #000 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+button.guia-cancel-button:active:not(:disabled):not(.disabled) {
+  transform: translateY(0);
+  box-shadow: none;
+  background-color: #e2e6ea !important;
+  border-color: #dae0e5 !important;
+}
+
+button.guia-cancel-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 0.25rem rgba(108, 117, 125, 0.25);
+}
+
+/* Estado desabilitado */
+button.guia-cancel-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Estilo para o botão Gerar GPS */
+#gerarGPSButton.guia-generate-button, button.guia-generate-button {
+  /* Reset de estilos padrão do botão */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  border: 1px solid #28a745;
+  margin: 0;
+  padding: 0.6rem 1.25rem;
+  font: inherit;
+  cursor: pointer;
+  outline: inherit;
+  
+  /* Estilos personalizados */
+  font-weight: 500;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  transition: all 0.2s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  min-width: 120px;
+  background-color: #28a745;
+  color: #fff;
+  text-decoration: none;
+  box-shadow: none;
+}
+
+/* Hover e estados ativos */
+button.guia-generate-button:not(:disabled):not(.disabled) {
+  cursor: pointer;
+}
+
+#gerarGPSButton.guia-generate-button:hover:not(:disabled):not(.disabled),
+button.guia-generate-button:hover:not(:disabled):not(.disabled) {
+  background-color: #218838 !important;
+  border-color: #1e7e34 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  color: #fff !important;
+}
+
+#gerarGPSButton.guia-generate-button:active:not(:disabled):not(.disabled),
+button.guia-generate-button:active:not(:disabled):not(.disabled) {
+  transform: translateY(0);
+  box-shadow: none;
+  background-color: #1e7e34 !important;
+  border-color: #1c7430 !important;
+}
+
+#gerarGPSButton.guia-generate-button:focus,
+button.guia-generate-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.25);
+}
+
+/* Estado desabilitado */
+#gerarGPSButton.guia-generate-button:disabled,
+button.guia-generate-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Estado de loading */
+#gerarGPSButton.guia-generate-button.loading,
+button.guia-generate-button.loading {
+  opacity: 0.8;
+  cursor: wait;
+  pointer-events: none;
+  position: relative;
+}
+
+/* Garante que o spinner fique alinhado */
+#gerarGPSButton.guia-generate-button .spinner-border,
+button.guia-generate-button .spinner-border {
+  width: 1rem;
+  height: 1rem;
+  border-width: 0.15em;
+  margin-right: 0.5rem;
+}
+
 .profile-image-pic {
   height: 200px;
   width: 200px;
@@ -260,6 +441,27 @@ select option:hover {
 .table-modern td {
   padding: 16px 18px !important;
   vertical-align: middle;
+}
+
+/* Estilo para o botão 'Vamos aos cálculos' */
+.btn-vamos-calculos,
+.btn-vamos-calculos.btn-secondary,
+.btn-vamos-calculos.btn-secondary:hover,
+.btn-vamos-calculos.btn-secondary:focus {
+  border-radius: 8px !important;
+  transition: all 0.2s ease-in-out !important;
+  padding: 0.5rem 1.5rem !important;
+  margin-top: 0.75rem !important;
+  display: inline-block !important;
+  transform: none !important;
+}
+
+.btn-vamos-calculos:hover,
+.btn-vamos-calculos.btn-secondary:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+  background-color: #5a6268 !important;
+  border-color: #545b62 !important;
 }
 
 .table-modern td.valor {

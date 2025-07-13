@@ -124,3 +124,9 @@ code {
 .dropdown-menu.show {
   animation: slideIn 0.3s ease-out forwards;
 }
+
+@keyframes spinner-border {
+  to {
+    transform: rotate(360deg);
+  }
+}

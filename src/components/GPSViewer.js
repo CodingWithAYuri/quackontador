@@ -1159,8 +1159,6 @@ const generatePDFExportable = async (formData) => {
     const margin = 15;
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
-    const generatedAt = new Date().toISOString();
-    
     // Define a cor de fundo da página
     doc.setFillColor(248, 249, 250); // Cor de fundo do tema QuackContador (#f8f9fa)
     doc.rect(0, 0, pageWidth, pageHeight, 'F');

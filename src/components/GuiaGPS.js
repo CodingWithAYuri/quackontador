@@ -1,7 +1,7 @@
 // Importa as dependências
 import React, { useState, useEffect } from 'react';
+import { Form, Row, Col, InputGroup, Alert } from 'react-bootstrap';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Form, Button, Alert, Spinner, InputGroup, Row, Col } from 'react-bootstrap';
 import { ArrowLeft, Person, CreditCard, Calendar, FileEarmarkText } from 'react-bootstrap-icons';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -180,17 +180,32 @@ const styles = {
     backgroundColor: 'transparent',
     color: '#fff',
     border: '1px solid #6c757d',
+    transition: 'all 0.2s ease-in-out',
     '&:hover': {
-      backgroundColor: 'rgba(108, 117, 125, 0.1)',
-      borderColor: '#fff'
+      color: '#000 !important',
+      backgroundColor: '#f8f9fa !important',
+      borderColor: '#f8f9fa !important',
+      transform: 'translateY(-2px) !important',
+      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2) !important'
+    },
+    '&:active': {
+      transform: 'translateY(0) !important',
+      boxShadow: 'none !important'
     }
   },
   generateButton: {
     backgroundColor: '#28a745',
     borderColor: '#28a745',
+    transition: 'all 0.2s ease-in-out',
     '&:hover': {
       backgroundColor: '#218838',
-      borderColor: '#1e7e34'
+      borderColor: '#1e7e34',
+      transform: 'translateY(-2px) !important',
+      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2) !important'
+    },
+    '&:active': {
+      transform: 'translateY(0) !important',
+      boxShadow: 'none !important'
     }
   },
   errorText: {
@@ -920,48 +935,78 @@ const GuiaGPS = () => {
             </Row>
             
             <div style={styles.buttonContainer}>
-              <Button 
-                variant="outline-secondary" 
+              <button 
                 onClick={() => navigate('/calculos')}
                 disabled={carregando}
-                style={{ ...styles.button, ...styles.backButton }}
+                className={`guia-cancel-button ${carregando ? 'loading' : ''}`}
               >
                 Cancelar
-              </Button>
+              </button>
               
-              <Button 
+              <button 
                 id="gerarGPSButton"
-                variant="primary" 
                 onClick={(e) => gerarGPS(e, false)}
                 disabled={carregando}
-                style={{ 
-                  ...styles.button, 
-                  ...styles.generateButton,
-                  position: 'relative',
-                  overflow: 'hidden',
-                  transition: 'all 0.3s ease',
-                  ...(carregando ? {
-                    backgroundColor: '#0d6efd',
-                    borderColor: '#0d6efd',
-                    opacity: 0.8,
-                    cursor: 'wait'
-                  } : {})
+                style={{
+                  backgroundColor: '#28a745',
+                  border: '1px solid #28a745',
+                  color: '#fff',
+                  padding: '0.6rem 1.25rem',
+                  borderRadius: '6px',
+                  fontWeight: 500,
+                  fontSize: '0.95rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease-in-out',
+                  minWidth: '120px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+                onMouseOver={(e) => {
+                  if (!carregando) {
+                    e.target.style.backgroundColor = '#fff';
+                    e.target.style.color = '#28a745';
+                    e.target.style.borderColor = '#28a745';
+                    e.target.style.transform = 'translateY(-2px)';
+                    e.target.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
+                  }
+                }}
+                onMouseOut={(e) => {
+                  if (!carregando) {
+                    e.target.style.backgroundColor = '#28a745';
+                    e.target.style.color = '#fff';
+                    e.target.style.borderColor = '#28a745';
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = 'none';
+                  }
+                }}
+                onMouseDown={(e) => {
+                  if (!carregando) {
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = 'none';
+                  }
                 }}
               >
                 {carregando ? (
-                  <>
-                    <Spinner
-                      as="span"
-                      animation="border"
-                      size="sm"
+                  <span style={{ display: 'flex', alignItems: 'center' }}>
+                    <div 
+                      style={{
+                        display: 'inline-block',
+                        width: '1rem',
+                        height: '1rem',
+                        border: '0.15em solid currentColor',
+                        borderRightColor: 'transparent',
+                        borderRadius: '50%',
+                        animation: 'spinner-border 0.75s linear infinite',
+                        marginRight: '0.5rem'
+                      }}
                       role="status"
                       aria-hidden="true"
-                      className="me-2"
                     />
-                    Gerando...
-                  </>
+                    Processando...
+                  </span>
                 ) : 'Gerar GPS'}
-              </Button>
+              </button>
             </div>
           </Form>
         </div>

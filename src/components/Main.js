@@ -1,5 +1,5 @@
 import React from "react";
-import { Container } from "react-bootstrap";
+import { Container, Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
 function Main() {
@@ -24,12 +24,28 @@ function Main() {
         <h2 className="cover-heading mb-4">Descomplique a sua contabilidade.</h2>
         <p className="lead mb-4">Explicação simples e sem muito blá blá blá</p>
         <p className="lead">
-          <Link 
-            to="/calculos" 
-            className="btn btn-lg btn-secondary"
-          >
-            Vamos aos cálculos!
-          </Link>
+          <div className="d-flex justify-content-center">
+            <Button
+              as={Link}
+              to="/calculos"
+              variant="outline-light"
+              size="lg"
+              className="custom-hover-button"
+              style={{
+                borderRadius: '8px',
+                transition: 'all 0.2s ease-in-out',
+                marginTop: '0.75rem',
+                padding: '0.5rem 1rem',
+                color: '#fff',
+                backgroundColor: 'transparent',
+                borderColor: '#fff',
+                width: '200px',
+                maxWidth: '100%'
+              }}
+            >
+              Vamos aos cálculos!
+            </Button>
+          </div>
         </p>
       </Container>
     </main>
