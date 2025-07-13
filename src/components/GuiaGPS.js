@@ -1,5 +1,6 @@
 // Importa as dependências
 import React, { useState, useEffect } from 'react';
+import { useUserData } from '../contexts/UserDataContext';
 import { Form, Row, Col, InputGroup, Alert } from 'react-bootstrap';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Person, CreditCard, Calendar, FileEarmarkText } from 'react-bootstrap-icons';
@@ -236,41 +237,52 @@ const GuiaGPS = () => {
   // Obtém os dados do usuário logado
   const { name: userName } = useUserEmail();
   
-  // Carrega os dados salvos do usuário ao montar o componente
+  // Obtém os dados do usuário do contexto
+  const { userData, updateUserData } = useUserData();
+  
+  // Estado local para o formulário
+  const [formData, setFormData] = useState({
+    nome: userData.nome || '',
+    cpf: userData.cpf || '',
+    dataNascimento: userData.dataNascimento || '',
+    nit: userData.nit || '',
+    valor: location.state?.valorInss || userData.valor || '0,00',
+    mesReferencia: userData.mesReferencia || String(new Date().getMonth() + 1).padStart(2, '0'),
+    anoReferencia: userData.anoReferencia || String(new Date().getFullYear()),
+    competencia: userData.competencia || ''
+  });
+  
+  // Atualiza o contexto quando os dados do formulário mudam
   useEffect(() => {
-    const savedData = localStorage.getItem('userGPSData');
-    if (savedData) {
-      const userData = JSON.parse(savedData);
+    const { nome, cpf, dataNascimento, nit } = formData;
+    updateUserData({ nome, cpf, dataNascimento, nit });
+  }, [formData.nome, formData.cpf, formData.dataNascimento, formData.nit, updateUserData]);
+  
+  // Atualiza o valor quando receber da rota
+  useEffect(() => {
+    if (location.state?.valorInss) {
       setFormData(prev => ({
         ...prev,
-        ...userData,
-        // Mantém os valores específicos do formulário se não existirem nos dados salvos
-        valor: location.state?.valorInss || prev.valor,
-        mesReferencia: prev.mesReferencia,
-        anoReferencia: prev.anoReferencia,
-        competencia: prev.competencia
+        valor: location.state.valorInss
       }));
     }
   }, [location.state?.valorInss]);
 
-  const [formData, setFormData] = useState({
-    nome: '',
-    cpf: '',
-    dataNascimento: '',
-    nit: '',
-    valor: location.state?.valorInss || '0,00',
-    mesReferencia: String(new Date().getMonth() + 1).padStart(2, '0'),
-    anoReferencia: String(new Date().getFullYear()),
-    competencia: ''
-  });
-
   // Atualiza a competência quando mês ou ano mudam
   useEffect(() => {
     if (formData.mesReferencia && formData.anoReferencia) {
+      const competencia = `${formData.mesReferencia}/${formData.anoReferencia}`;
       setFormData(prev => ({
         ...prev,
-        competencia: `${formData.mesReferencia}/${formData.anoReferencia}`
+        competencia: competencia
       }));
+      
+      // Atualiza o contexto com mês, ano e competência
+      updateUserData({
+        mesReferencia: formData.mesReferencia,
+        anoReferencia: formData.anoReferencia,
+        competencia: competencia
+      });
     }
   }, [formData.mesReferencia, formData.anoReferencia]);
   
@@ -304,13 +316,15 @@ const GuiaGPS = () => {
     }
   };
   
-  // Preenche o nome do usuário quando o componente é montado
+  // Preenche o nome do usuário quando o componente é montado ou quando o userName muda
   useEffect(() => {
-    if (userName) {
+    if (userName && userName !== formData.nome) {
       setFormData(prev => ({
         ...prev,
         nome: userName
       }));
+      // Atualiza o contexto com o nome do usuário
+      updateUserData({ nome: userName });
     }
   }, [userName]);
 
@@ -337,6 +351,9 @@ const GuiaGPS = () => {
             ...prev,
             valor: valorFormatado
           }));
+          
+          // Atualiza o contexto com o valor formatado
+          updateUserData({ valor: valorFormatado });
         }
       } catch (error) {
         console.error('Erro ao formatar valor do INSS:', error);
@@ -344,13 +361,27 @@ const GuiaGPS = () => {
           ...prev,
           valor: '0,00'
         }));
+        
+        // Atualiza o contexto com valor padrão em caso de erro
+        updateUserData({ valor: '0,00' });
       }
     }
-  }, [location.state]);
+  }, [location.state?.valorInss]);
 
   // Atualiza os campos do formulário
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
+    // Atualiza o estado local imediatamente para melhor resposta da UI
+    setFormData(prev => {
+      const newData = { ...prev, [name]: value };
+      
+      // Atualiza o contexto com os dados relevantes
+      const { nome, cpf, dataNascimento, nit } = newData;
+      updateUserData({ nome, cpf, dataNascimento, nit });
+      
+      return newData;
+    });
     
     // Formatação do CPF
     if (name === 'cpf' && value) {
@@ -383,6 +414,9 @@ const GuiaGPS = () => {
         ...prev,
         [name]: cpfFormatado
       }));
+      
+      // Atualiza o contexto com o CPF formatado
+      updateUserData({ cpf: cpfFormatado });
       return;
     }
     
@@ -393,15 +427,26 @@ const GuiaGPS = () => {
         ...prev,
         [name]: dataFormatada
       }));
+      
+      // Atualiza o contexto com a data formatada
+      if (validarDataBrasileira(dataFormatada)) {
+        updateUserData({ dataNascimento: dataFormatada });
+      }
       return;
     }
     
     // Formatação do NIT
     if (name === 'nit' && value) {
+      const nitFormatado = formatarNIT(value);
       setFormData(prev => ({
         ...prev,
-        [name]: formatarNIT(value)
+        [name]: nitFormatado
       }));
+      
+      // Atualiza o contexto com o NIT formatado
+      if (nitFormatado.replace(/\D/g, '').length === 11) {
+        updateUserData({ nit: nitFormatado });
+      }
       return;
     }
     
@@ -423,12 +468,22 @@ const GuiaGPS = () => {
   
   // Formata NIT no padrão 111.11111.11-1
   const formatarNIT = (value) => {
-    return value
-      .replace(/\D/g, '')
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{5})(\d)/, '$1.$2')
-      .replace(/(\d{2})(\d{1,2})/, '$1-$2')
-      .replace(/(-\d{1})\d+?$/, '$1');
+    if (!value) return '';
+    
+    // Remove todos os caracteres não numéricos
+    const onlyNums = value.replace(/\D/g, '');
+    
+    // Aplica a máscara 000.00000.00-0
+    if (onlyNums.length <= 3) {
+      return onlyNums;
+    }
+    if (onlyNums.length <= 8) {
+      return `${onlyNums.slice(0, 3)}.${onlyNums.slice(3)}`;
+    }
+    if (onlyNums.length <= 10) {
+      return `${onlyNums.slice(0, 3)}.${onlyNums.slice(3, 8)}.${onlyNums.slice(8)}`;
+    }
+    return `${onlyNums.slice(0, 3)}.${onlyNums.slice(3, 8)}.${onlyNums.slice(8, 10)}-${onlyNums.slice(10, 11)}`;
   };
 
   // Formata a data para o formato brasileiro (dd/mm/aaaa)

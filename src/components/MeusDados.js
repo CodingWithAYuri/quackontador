@@ -1,14 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { FaUser, FaCalendarAlt, FaIdCard, FaArrowLeft, FaSave, FaLock } from 'react-icons/fa';
+import { useUserData } from '../contexts/UserDataContext';
 
 const MeusDados = () => {
   const navigate = useNavigate();
+  // Usa o hook useUserData para acessar e atualizar os dados do usuário
+  const { userData, updateUserData } = useUserData();
+  
+  // Estado local para o formulário, inicializado com os dados do contexto
   const [formData, setFormData] = useState({
-    cpf: '',
-    dataNascimento: '',
-    nit: ''
+    cpf: userData.cpf || '',
+    dataNascimento: userData.dataNascimento || '',
+    nit: userData.nit || ''
   });
+  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -22,13 +28,15 @@ const MeusDados = () => {
   });
   const [passwordErrors, setPasswordErrors] = useState({});
 
-  // Carrega os dados salvos ao montar o componente
+  // Atualiza o estado local quando os dados do contexto mudam
   useEffect(() => {
-    const savedData = localStorage.getItem('userGPSData');
-    if (savedData) {
-      setFormData(JSON.parse(savedData));
-    }
-  }, []);
+    setFormData(prev => ({
+      ...prev,
+      cpf: userData.cpf || '',
+      dataNascimento: userData.dataNascimento || '',
+      nit: userData.nit || ''
+    }));
+  }, [userData]);
 
   // Valida a força da senha
   const validatePassword = (password) => {
@@ -100,9 +108,15 @@ const MeusDados = () => {
       return;
     }
 
-    // Salva os dados no localStorage
+    // Salva os dados no contexto e no localStorage
     try {
-      localStorage.setItem('userGPSData', JSON.stringify(formData));
+      // Atualiza o contexto com os novos dados
+      updateUserData({
+        cpf: formData.cpf,
+        dataNascimento: formData.dataNascimento,
+        nit: formData.nit
+      });
+      
       setSuccess('Dados salvos com sucesso!');
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
@@ -228,26 +242,45 @@ const MeusDados = () => {
   // Manipuladores de mudança com formatação
   const handleCPFChange = (e) => {
     const { value } = e.target;
+    const formattedCPF = formatCPF(value);
     setFormData(prev => ({
       ...prev,
-      cpf: formatCPF(value)
+      cpf: formattedCPF
     }));
+    
+    // Atualiza o contexto com o CPF formatado
+    if (formattedCPF.replace(/\D/g, '').length === 11) {
+      updateUserData({ cpf: formattedCPF });
+    }
   };
 
   const handleNITChange = (e) => {
     const { value } = e.target;
+    const formattedNIT = formatNIT(value);
     setFormData(prev => ({
       ...prev,
-      nit: formatNIT(value)
+      nit: formattedNIT
     }));
+    
+    // Atualiza o contexto com o NIT formatado
+    if (formattedNIT.replace(/\D/g, '').length === 11) {
+      updateUserData({ nit: formattedNIT });
+    }
   };
 
   const handleDateChange = (e) => {
     const { value } = e.target;
+    const formattedDate = formatDate(value);
     setFormData(prev => ({
       ...prev,
-      dataNascimento: formatDate(value)
+      dataNascimento: formattedDate
     }));
+    
+    // Valida e atualiza o contexto com a data formatada
+    const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
+    if (dateRegex.test(formattedDate)) {
+      updateUserData({ dataNascimento: formattedDate });
+    }
   };
 
   // A animação de loading é definida diretamente nos estilos inline
