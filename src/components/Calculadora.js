@@ -32,34 +32,64 @@ const Calculadora = () => {
   const location = useLocation();
   const navigate = useNavigate();
   
-  // Verifica se há estado de retorno da GuiaGPS
+  // Verifica se há estado de retorno da GuiaGPS ou DARF
   useEffect(() => {
-    if (location.state?.manterValores) {
-      if (location.state.valorSalario) {
-        setSalario(location.state.valorSalario);
-      }
-      if (location.state.anoSelecionado) {
-        setAno(location.state.anoSelecionado);
-        // Se houver salário, recalcula automaticamente
-        if (location.state.valorSalario) {
-          const salarioNumerico = parseFloat(location.state.valorSalario.replace(/\./g, '').replace(',', '.'));
-          if (!isNaN(salarioNumerico)) {
-            const inssClt = parseFloat(calcularInssClt(salarioNumerico, location.state.anoSelecionado));
-            const irClt = parseFloat(calcularIrClt(salarioNumerico - inssClt, location.state.anoSelecionado));
-            const inssAutonomo = parseFloat(calcularInssAutonomo(salarioNumerico, location.state.anoSelecionado));
-            
-            setResultados({
-              inssClt: formatarMoeda(inssClt),
-              irClt: formatarMoeda(irClt),
-              inssAutonomo: formatarMoeda(inssAutonomo),
-              salarioLiquidoClt: formatarMoeda(salarioNumerico - inssClt - irClt),
-              salarioLiquidoAutonomo: formatarMoeda(salarioNumerico - inssAutonomo - irClt)
-            });
-          }
-        }
-      }
+    console.log('=== Calculadora.js - useEffect ===');
+    console.log('Estado de navegação:', location.state);
+    console.log('Tem manterValores:', location.state?.manterValores);
+    console.log('Tem returnToMemory:', location.state?.returnToMemory);
+    console.log('Path atual:', window.location.pathname);
+    console.log('Hash atual:', window.location.hash);
+    console.log('=================================');
+    
+    // Função para processar o retorno da navegação
+    const processarRetorno = () => {
+      if (!location.state) return;
+      
+      // Cria uma cópia do estado para evitar mutação direta
+      const currentState = { ...location.state };
+      
       // Limpa o estado de navegação para evitar recálculos indesejados
       window.history.replaceState({}, document.title);
+      
+      // Se não tiver os dados necessários, não faz nada
+      if (!currentState.valorSalario || !currentState.anoSelecionado) {
+        console.log('Dados insuficientes para processar o retorno');
+        return;
+      }
+      
+      // Atualiza o salário e ano
+      setSalario(currentState.valorSalario);
+      setAno(currentState.anoSelecionado);
+      
+      // Recalcula os resultados
+      const salarioNumerico = parseFloat(currentState.valorSalario.replace(/\./g, '').replace(',', '.'));
+      
+      if (isNaN(salarioNumerico)) {
+        console.error('Valor de salário inválido:', currentState.valorSalario);
+        return;
+      }
+      
+      const inssClt = parseFloat(calcularInssClt(salarioNumerico, currentState.anoSelecionado));
+      const irClt = parseFloat(calcularIrClt(salarioNumerico - inssClt, currentState.anoSelecionado));
+      const inssAutonomo = parseFloat(calcularInssAutonomo(salarioNumerico, currentState.anoSelecionado));
+      
+      // Atualiza os resultados
+      setResultados({
+        inssClt: formatarMoeda(inssClt),
+        irClt: formatarMoeda(irClt),
+        inssAutonomo: formatarMoeda(inssAutonomo),
+        salarioLiquidoClt: formatarMoeda(salarioNumerico - inssClt - irClt),
+        salarioLiquidoAutonomo: formatarMoeda(salarioNumerico - inssAutonomo - irClt)
+      });
+      
+      console.log('Resultados atualizados com sucesso');
+    };
+    
+    // Processa o retorno apenas se tiver o estado de navegação
+    if (location.state?.returnToMemory || location.state?.manterValores) {
+      console.log('Processando retorno para memória de cálculos');
+      processarRetorno();
     }
   }, [location.state]);
   
@@ -84,8 +114,19 @@ const Calculadora = () => {
         } 
       });
     } else if (tipo === 'DARF') {
-      // Lógica para DARF (pode ser implementada posteriormente)
-      console.log('Gerar DARF');
+      // Navega para a rota do DARF passando o valor do IR e os dados atuais
+      // Remove pontos de milhar e substitui vírgula por ponto para garantir um número válido
+      const valorIr = resultados?.irClt 
+        ? resultados.irClt.replace(/\./g, '').replace(',', '.')
+        : '0.00';
+      
+      navigate('/darf', { 
+        state: { 
+          valorIr: valorIr,
+          valorSalario: salario,
+          anoSelecionado: ano
+        } 
+      });
     }
   };
 

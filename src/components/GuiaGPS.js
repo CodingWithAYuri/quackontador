@@ -43,7 +43,11 @@ const styles = {
     padding: '1.5rem',
     backgroundColor: 'var(--card-bg)',
     borderRadius: '8px',
-    boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)'
+    boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   formTitle: {
     fontSize: '1.5rem',
@@ -141,7 +145,9 @@ const styles = {
     fontSize: '0.7rem',
     color: '#aaa',
     marginTop: '0.25rem',
-    display: 'block'
+    display: 'block',
+    textTransform: 'lowercase',
+    fontStyle: 'italic'
   },
   buttonContainer: {
     display: 'flex',
@@ -256,7 +262,7 @@ const GuiaGPS = () => {
   useEffect(() => {
     const { nome, cpf, dataNascimento, nit } = formData;
     updateUserData({ nome, cpf, dataNascimento, nit });
-  }, [formData.nome, formData.cpf, formData.dataNascimento, formData.nit, updateUserData]);
+  }, [formData, updateUserData]); // Incluindo formData e updateUserData como dependências
   
   // Atualiza o valor quando receber da rota
   useEffect(() => {
@@ -266,15 +272,15 @@ const GuiaGPS = () => {
         valor: location.state.valorInss
       }));
     }
-  }, [location.state?.valorInss]);
+  }, [location.state?.valorInss, setFormData]);
 
   // Atualiza a competência quando mês ou ano mudam
   useEffect(() => {
     if (formData.mesReferencia && formData.anoReferencia) {
-      const competencia = `${formData.mesReferencia}/${formData.anoReferencia}`;
+      const competencia = `${formData.mesReferencia.padStart(2, '0')}/${formData.anoReferencia}`;
       setFormData(prev => ({
         ...prev,
-        competencia: competencia
+        competencia
       }));
       
       // Atualiza o contexto com mês, ano e competência
@@ -284,7 +290,7 @@ const GuiaGPS = () => {
         competencia: competencia
       });
     }
-  }, [formData.mesReferencia, formData.anoReferencia]);
+  }, [formData.mesReferencia, formData.anoReferencia, updateUserData]); // Adicionado updateUserData como dependência
   
   // Função para calcular o vencimento (15 do mês seguinte, ou próximo dia útil se for final de semana)
   const calcularVencimento = (mesAno) => {
@@ -326,7 +332,7 @@ const GuiaGPS = () => {
       // Atualiza o contexto com o nome do usuário
       updateUserData({ nome: userName });
     }
-  }, [userName]);
+  }, [userName, formData.nome, updateUserData]); // Adicionando formData.nome e updateUserData como dependências
 
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(false);
@@ -366,7 +372,7 @@ const GuiaGPS = () => {
         updateUserData({ valor: '0,00' });
       }
     }
-  }, [location.state?.valorInss]);
+  }, [location.state?.valorInss, updateUserData]); // Adicionado updateUserData como dependência
 
   // Atualiza os campos do formulário
   const handleChange = (e) => {
@@ -760,7 +766,7 @@ const GuiaGPS = () => {
           }}
         >
           <ArrowLeft style={styles.icon} />
-          Voltar para o cálculo
+          Voltar para a memória dos cálculos
         </button>
         
         <div style={styles.formContainer}>
@@ -991,7 +997,10 @@ const GuiaGPS = () => {
             
             <div style={styles.buttonContainer}>
               <button 
-                onClick={() => navigate('/calculos')}
+                onClick={() => {
+                  // Retorna para a memória de cálculo
+                  navigate('/calculos', { state: { returnToMemory: true } });
+                }}
                 disabled={carregando}
                 className={`guia-cancel-button ${carregando ? 'loading' : ''}`}
               >

@@ -16,6 +16,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import GuiaGPS from './components/GuiaGPS';
 import GPSViewer from './components/GPSViewer';
 import MeusDados from './components/MeusDados';
+import DARF from './components/DARF';
 
 function App() {
   const appStyles = {
@@ -62,6 +63,16 @@ function App() {
               <WithHeaderAndFooter>
                 <ProtectedRoute>
                   <GuiaGPS />
+                </ProtectedRoute>
+              </WithHeaderAndFooter>
+            } 
+          />
+          <Route 
+            path="/darf" 
+            element={
+              <WithHeaderAndFooter>
+                <ProtectedRoute>
+                  <DARF />
                 </ProtectedRoute>
               </WithHeaderAndFooter>
             } 

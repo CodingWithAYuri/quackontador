@@ -19,6 +19,32 @@ a:hover {
   border: 0.05rem solid #fff;
 }
 
+/* Estilo específico para o container do R$ */
+.input-group .input-group-text {
+  all: initial;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 44px !important;
+  height: 38px !important;
+  min-width: 44px !important;
+  max-width: 44px !important;
+  min-height: 38px !important;
+  max-height: 38px !important;
+  background-color: #444444 !important;
+  border: 1px solid #555 !important;
+  color: #FFFFFF !important;
+  border-right: none !important;
+  border-radius: 6px 0 0 6px !important;
+  font-size: 16px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  line-height: 38px !important;
+  font-family: -apple-system, "system-ui", "Segoe UI" !important;
+}
+
 /*
  * Base 
  */
