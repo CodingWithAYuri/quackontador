@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useUserData } from '../contexts/UserDataContext';
-import { Form, Row, Col, InputGroup, Alert } from 'react-bootstrap';
+import { Form, Row, Col, InputGroup } from 'react-bootstrap';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, Person, FileEarmarkText } from 'react-bootstrap-icons';
-import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import { Person, FileEarmarkText } from 'react-bootstrap-icons';
 import { useUserEmail } from '../hooks/useUserEmail';
 
 // Estilos inline para o componente
@@ -221,44 +219,151 @@ const styles = {
   },
   backIcon: {
     marginRight: '0.5rem'
+  },
+  pdfContainer: {
+    width: '100%',
+    maxWidth: '800px',
+    margin: '2rem auto',
+    padding: '1.5rem',
+    backgroundColor: '#fff',
+    borderRadius: '8px',
+    boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)',
+    border: '1px solid rgba(0, 0, 0, 0.1)'
+  },
+  pdfHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '1rem'
+  },
+  iframe: {
+    width: '100%',
+    height: '500px',
+    border: 'none',
+    borderRadius: '8px',
+    boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)'
+  },
+  downloadButton: {
+    backgroundColor: '#28a745',
+    border: '1px solid #28a745',
+    color: '#fff',
+    padding: '0.6rem 1.25rem',
+    fontWeight: '500',
+    borderRadius: '6px',
+    fontSize: '0.95rem',
+    transition: 'all 0.2s ease-in-out',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '0.5rem',
+    whiteSpace: 'nowrap',
+    minWidth: '120px',
+    cursor: 'pointer',
+    boxShadow: 'none',
+    transform: 'translateY(0)'
+  },
+  downloadIcon: {
+    marginRight: '0.5rem'
   }
 };
 
 const DARF = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // User email is not currently used in the component
   useUserEmail();
   const { userData, updateUserData } = useUserData();
+
   
   // Estado local para o formulário
+  // Função para formatar valor inicial
+  const formatarValorInicial = (valor) => {
+    if (!valor || valor === '0,00' || valor === 0) return '0,00';
+    
+    // Se já está no formato brasileiro, retorna como está
+    if (typeof valor === 'string' && valor.includes(',') && !valor.includes('.')) {
+      return valor;
+    }
+    
+    // Converte para string
+    const valorStr = String(valor);
+    
+    // Se é um número decimal (formato americano: 12592.30)
+    if (valorStr.includes('.') && /^\d+\.\d+$/.test(valorStr)) {
+      const [parteInteira, parteDecimal] = valorStr.split('.');
+      // Adiciona separadores de milhares na parte inteira
+      const parteInteiraFormatada = parteInteira.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      // Garante 2 casas decimais
+      const parteDecimalFormatada = parteDecimal.padEnd(2, '0').substring(0, 2);
+      return `${parteInteiraFormatada},${parteDecimalFormatada}`;
+    }
+    
+    // Se é apenas números inteiros ou string numérica
+    const numeros = valorStr.replace(/\D/g, '');
+    if (numeros && numeros !== '0') {
+      const numero = parseInt(numeros, 10);
+      // Se o número é maior que 999, trata como centavos
+      if (numero > 999) {
+        const numeroDecimal = numero / 100;
+        const numeroStr = numeroDecimal.toFixed(2);
+        const [parteInteira, parteDecimal] = numeroStr.split('.');
+        const parteInteiraFormatada = parteInteira.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        return `${parteInteiraFormatada},${parteDecimal}`;
+      } else {
+        // Números pequenos, adiciona ,00
+        const parteInteiraFormatada = numero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        return `${parteInteiraFormatada},00`;
+      }
+    }
+    
+    return '0,00';
+  };
+
   const [formData, setFormData] = useState({
     nome: userData.nome || '',
     cpf: userData.cpf || '',
-    codigoReceita: userData.codigoReceita || '0190',
+    codigoReceita: '0190',
     mesReferencia: userData.mesReferencia || '',
     anoReferencia: userData.anoReferencia || '',
-    valorIr: location.state?.valorIr || '0,00'
+    valorIr: formatarValorInicial(location.state?.valorIr) || '0,00'
   });
   
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState('');
   const [validationErrors, setValidationErrors] = useState({});
   
-  // Atualiza o contexto quando os dados do formulário mudam
-  useEffect(() => {
-    updateUserData(formData);
-  }, [formData, updateUserData]);
+  // Atualiza o contexto apenas quando o formulário for enviado ou quando sair da página
+  // Removemos o efeito que atualizava o contexto a cada mudança no formData
   
+  // Força a formatação do valor inicial após o componente montar
+  useEffect(() => {
+    if (formData.valorIr && formData.valorIr !== '0,00') {
+      const valorAtualFormatado = formatarValorInicial(formData.valorIr);
+      if (valorAtualFormatado !== formData.valorIr) {
+        setFormData(prev => ({
+          ...prev,
+          valorIr: valorAtualFormatado
+        }));
+      }
+    }
+  }, []); // Executa apenas uma vez após o mount
+
   // Atualiza o estado quando location.state mudar
   useEffect(() => {
-    if (location.state?.valorIr) {
+    if (location.state?.valorIr && location.state.valorIr !== formData.valorIr) {
+      const valorFormatado = formatarValorInicial(location.state.valorIr);
       setFormData(prev => ({
         ...prev,
-        valorIr: location.state.valorIr
+        valorIr: valorFormatado
       }));
     }
-  }, [location.state]);
+  }, [location.state]); // eslint-disable-line react-hooks/exhaustive-deps
+  
+  // Atualiza o contexto quando o componente for desmontado ou quando o usuário sair da página
+  useEffect(() => {
+    return () => {
+      updateUserData(formData);
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   
   // Manipulador de mudança dos campos do formulário
   const handleChange = (e) => {
@@ -340,20 +445,23 @@ const DARF = () => {
   };
   
   // Formata o valor monetário
-  const formatarValor = (valor) => {
-    if (!valor) return '0,00';
+  const formatarValor = (numeros) => {
+    if (!numeros || numeros === '0') return '0,00';
     
-    // Remove tudo que não for dígito
-    const numeros = valor.replace(/\D/g, '');
+    // Converte para número (centavos para reais)
+    const numero = parseInt(numeros, 10) / 100;
     
-    // Converte para número e formata como moeda
-    const numero = parseFloat(numeros) / 100;
+    // Converte para string com 2 casas decimais
+    const numeroStr = numero.toFixed(2);
     
-    // Formata como moeda brasileira
-    return numero.toLocaleString('pt-BR', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
+    // Separa parte inteira e decimal
+    const [parteInteira, parteDecimal] = numeroStr.split('.');
+    
+    // Adiciona separadores de milhares (pontos) na parte inteira
+    const parteInteiraFormatada = parteInteira.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    
+    // Retorna no formato brasileiro: 136.342,30
+    return `${parteInteiraFormatada},${parteDecimal}`;
   };
   
   // Manipulador de mudança do CPF
@@ -378,7 +486,30 @@ const DARF = () => {
   // Manipulador de mudança do valor do IR
   const handleValorChange = (e) => {
     const { value } = e.target;
-    const valorFormatado = formatarValor(value);
+    
+    // Se o valor está vazio, define como 0,00
+    if (!value || value === '') {
+      setFormData(prev => ({
+        ...prev,
+        valorIr: '0,00'
+      }));
+      return;
+    }
+    
+    // Remove tudo que não for dígito para processar
+    const apenasNumeros = value.replace(/\D/g, '');
+    
+    // Se não há números, mantém 0,00
+    if (!apenasNumeros) {
+      setFormData(prev => ({
+        ...prev,
+        valorIr: '0,00'
+      }));
+      return;
+    }
+    
+    // Aplica a formatação
+    const valorFormatado = formatarValor(apenasNumeros);
     
     setFormData(prev => ({
       ...prev,
@@ -394,119 +525,134 @@ const DARF = () => {
     }
   };
   
-  // Gera o PDF da DARF
-  const gerarDARF = async (e) => {
-    e.preventDefault();
+  // Gera o PDF da DARF e abre em uma nova aba
+  const gerarDARF = async (e, autoPrint = false) => {
+    console.log('gerarDARF chamado', { autoPrint });
+    
+    // Previne o comportamento padrão do evento se existir
+    if (e && e.preventDefault) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    // Foca no botão de gerar para garantir que o usuário veja o feedback visual
+    const generateButton = document.getElementById('gerarDARFButton');
+    if (generateButton) {
+      generateButton.blur(); // Remove o foco para evitar múltiplos cliques
+    }
     
     if (!validarFormulario()) {
-      setErro('Por favor, preencha todos os campos obrigatórios corretamente.');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      console.log('Validação do formulário falhou');
       return;
     }
     
+    setCarregando(true);
+    setErro('');
+    
     try {
-      setCarregando(true);
-      setErro('');
+      console.log('Preparando dados do DARF...');
       
-      // Cria um novo documento PDF
-      const doc = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
+      // Prepara os dados do DARF
+      const darfData = {
+        ...formData,
+        valor: formData.valorIr !== undefined && formData.valorIr !== null ? 
+          parseFloat(String(formData.valorIr).replace(/\./g, '').replace(',', '.')) : 0
+      };
+
+      // Gera um ID único para o documento
+      const documentId = `darf-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const timestamp = new Date().toISOString();
+
+      // Prepara o objeto completo para salvar
+      const dataToSave = {
+        formData: {
+          ...darfData,
+          _documentId: documentId,
+          _timestamp: timestamp
+        },
+        timestamp: timestamp,
+        documentId: documentId
+      };
+
+      // Salva os dados no sessionStorage como fallback
+      sessionStorage.setItem('darfData', JSON.stringify(dataToSave));
+      console.log('Dados salvos no sessionStorage');
+      
+      // Importa o componente DARFViewer e suas funções exportadas
+      import('./DARFViewer').then(async (DARFViewerModule) => {
+        try {
+          const { exportedFunctions } = DARFViewerModule;
+          
+          if (!exportedFunctions || !exportedFunctions.generatePDF) {
+            throw new Error('Função de geração de PDF não encontrada');
+          }
+          
+          // Gera o PDF diretamente usando a função do DARFViewer
+          const pdfResult = await exportedFunctions.generatePDF(dataToSave.formData);
+          
+          // Abre o PDF em uma nova aba
+          const printWindow = window.open(pdfResult.url, '_blank');
+          if (printWindow) {
+            // Se autoPrint for true, inicia a impressão automaticamente quando o PDF carregar
+            if (autoPrint) {
+              printWindow.onload = () => {
+                printWindow.print();
+              };
+            }
+          } else {
+            // Se o navegador bloqueou o popup, mostra uma mensagem para o usuário
+            alert('Por favor, permita popups para visualizar o DARF');
+          }
+          
+          setCarregando(false);
+        } catch (error) {
+          console.error('Erro ao gerar PDF diretamente:', error);
+          
+          // Fallback: navega para o DARFViewer se não conseguir gerar o PDF diretamente
+          navigate('/darf-viewer', { 
+            state: dataToSave,
+            replace: true
+          });
+          
+          // Fecha o loading após um pequeno delay
+          setTimeout(() => {
+            setCarregando(false);
+          }, 1000);
+        }
+      }).catch(error => {
+        console.error('Erro ao importar DARFViewer:', error);
+        
+        // Fallback: navega para o DARFViewer se não conseguir importar o módulo
+        navigate('/darf-viewer', { 
+          state: dataToSave,
+          replace: true
+        });
+        
+        // Fecha o loading após um pequeno delay
+        setTimeout(() => {
+          setCarregando(false);
+        }, 1000);
       });
-      
-      // Adiciona o título
-      doc.setFontSize(16);
-      doc.setFont('helvetica', 'bold');
-      doc.text('DARF - Documento de Arrecadação de Receitas Federais', 105, 20, { align: 'center' });
-      
-      // Adiciona os dados do contribuinte
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'normal');
-      doc.text('DADOS DO CONTRIBUINTE', 14, 40);
-      
-      // Linha horizontal
-      doc.setDrawColor(200);
-      doc.setLineWidth(0.5);
-      doc.line(14, 43, 200 - 14, 43);
-      
-      // Tabela de dados
-      const dados = [
-        ['Nome:', formData.nome],
-        ['CPF:', formData.cpf || 'Não informado'],
-        ['Código da Receita:', formData.codigoReceita],
-        ['Competência:', `${formData.mesReferencia}/${formData.anoReferencia}`],
-        ['Valor a Pagar:', `R$ ${formData.valorIr}`]
-      ];
-      
-      // Adiciona a tabela
-      doc.autoTable({
-        startY: 50,
-        head: [['Campo', 'Valor']],
-        body: dados,
-        theme: 'grid',
-        headStyles: {
-          fillColor: [51, 51, 51],
-          textColor: 255,
-          fontStyle: 'bold'
-        },
-        styles: {
-          cellPadding: 5,
-          fontSize: 10,
-          valign: 'middle'
-        },
-        columnStyles: {
-          0: { fontStyle: 'bold', cellWidth: 50 },
-          1: { cellWidth: 'auto' }
-        },
-        margin: { left: 14, right: 14 }
-      });
-      
-      // Adiciona o rodapé
-      doc.setFontSize(8);
-      doc.setFont('helvetica', 'italic');
-      doc.text('Este documento foi gerado pelo Quackontador App e não substitui o DARF oficial.', 105, 280, { align: 'center' });
-      doc.text(`Data de geração: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, 105, 284, { align: 'center' });
-      
-      // Salva o PDF
-      doc.save(`DARF_${formData.nome.replace(/\s+/g, '_')}_${formData.mesReferencia}_${formData.anoReferencia}.pdf`);
-      
     } catch (error) {
       console.error('Erro ao gerar DARF:', error);
-      setErro('Ocorreu um erro ao gerar o DARF. Por favor, tente novamente.');
-    } finally {
+      setErro(`Ocorreu um erro ao gerar o DARF: ${error.message}. Por favor, tente novamente.`);
       setCarregando(false);
     }
   };
+  
+
   
   return (
     <div style={styles.pageContainer}>
       <div style={styles.contentContainer}>
         <div style={styles.formContainer}>
-          <a 
-            href="/calculos" 
-            onClick={(e) => {
-              e.preventDefault();
-              navigate('/calculos', { 
-                state: { 
-                  returnToMemory: true,
-                  valorSalario: location.state?.valorSalario || '',
-                  anoSelecionado: location.state?.anoSelecionado || new Date().getFullYear()
-                }
-              });
-            }}
-            style={styles.backLink}
-          >
-            <ArrowLeft style={styles.backIcon} /> Voltar para a memória dos cálculos
-          </a>
-          
-          <h2 style={styles.formTitle}>DARF - Documento de Arrecadação de Receitas Federais</h2>
-          <p style={styles.formSubtitle}>Preencha os dados abaixo para gerar o DARF</p>
+          <h2 style={styles.formTitle}>DARF</h2>
+          <p style={styles.formSubtitle}>Documento de Arrecadação de Receitas Federais</p>
           
           {erro && (
-            <Alert variant="danger" style={styles.errorAlert}>
+            <div style={styles.errorAlert}>
               {erro}
-            </Alert>
+            </div>
           )}
           
           <Form onSubmit={gerarDARF} style={{ width: '100%' }}>
@@ -561,9 +707,6 @@ const DARF = () => {
                       {validationErrors.cpf}
                     </span>
                   )}
-                  <span style={styles.formText}>
-                    Formato: 000.000.000-00
-                  </span>
                 </Form.Group>
               </Col>
             </Row>
@@ -587,9 +730,6 @@ const DARF = () => {
                       isInvalid={!!validationErrors.codigoReceita}
                     />
                   </InputGroup>
-                  <span style={styles.formText}>
-                    Código da Receita
-                  </span>
                 </Form.Group>
               </Col>
               
@@ -647,9 +787,6 @@ const DARF = () => {
                       {validationErrors.mesReferencia || validationErrors.anoReferencia}
                     </span>
                   )}
-                  <span style={styles.formText}>
-                    Mês/Ano de referência
-                  </span>
                 </Form.Group>
               </Col>
               
@@ -677,9 +814,6 @@ const DARF = () => {
                       {validationErrors.valorIr}
                     </span>
                   )}
-                  <span style={styles.formText}>
-                    Valor do IR Autônomo
-                  </span>
                 </Form.Group>
               </Col>
             </Row>
@@ -714,6 +848,7 @@ const DARF = () => {
               </button>
               
               <button 
+                id="gerarDARFButton"
                 type="submit" 
                 disabled={carregando}
                 style={carregando ? 
@@ -750,6 +885,7 @@ const DARF = () => {
               </button>
             </div>
           </Form>
+
         </div>
       </div>
     </div>

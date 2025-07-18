@@ -17,6 +17,7 @@ import GuiaGPS from './components/GuiaGPS';
 import GPSViewer from './components/GPSViewer';
 import MeusDados from './components/MeusDados';
 import DARF from './components/DARF';
+import DARFViewer from './components/DARFViewer';
 
 function App() {
   const appStyles = {
@@ -94,6 +95,26 @@ function App() {
               <WithHeaderAndFooter>
                 <ProtectedRoute>
                   <GPSViewer key={window.location.pathname} />
+                </ProtectedRoute>
+              </WithHeaderAndFooter>
+            } 
+          />
+          <Route 
+            path="/darf-viewer" 
+            element={
+              <WithHeaderAndFooter>
+                <ProtectedRoute>
+                  <DARFViewer key={window.location.pathname + window.location.search} />
+                </ProtectedRoute>
+              </WithHeaderAndFooter>
+            } 
+          />
+          <Route 
+            path="/darf-viewer/:timestamp" 
+            element={
+              <WithHeaderAndFooter>
+                <ProtectedRoute>
+                  <DARFViewer key={window.location.pathname} />
                 </ProtectedRoute>
               </WithHeaderAndFooter>
             } 
