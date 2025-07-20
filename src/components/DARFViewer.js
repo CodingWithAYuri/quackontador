@@ -514,7 +514,7 @@ const generatePDFExportable = async (formData) => {
       ['CPF', formData.cpf || ''],
       ['Código da Receita', formData.codigoReceita || '0190'],
       ['Competência', `${(formData.mesReferencia || '01').padStart(2, '0')}/${formData.anoReferencia || new Date().getFullYear()}`],
-      ['Data de Pagamento', dataPagamento],
+      ['Data de Vencimento', dataPagamento],
       ['Valor a Pagar', `R$ ${formatarValor(formData.valorIr)}`],
       ['Código de Barras', ''] // Célula vazia para o código de barras
     ];
@@ -584,12 +584,18 @@ const generatePDFExportable = async (formData) => {
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(0, 0, 0);
-    doc.text('AVISO LEGAL', 20, finalY + 20);
+    
+    // Posiciona o título mais próximo da tabela
+    const startY = finalY + 15; // Reduzido para 15
+    doc.text('AVISO LEGAL', 20, startY);
     
     // Texto do aviso legal
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(0, 0, 0);
+    
+    // Define a posição Y inicial para o texto que vem depois do título
+    let yPosition = startY + 10; // Espaço reduzido após o título
     
     const avisoTexto = [
       'Os códigos de barras exibidos nesta plataforma são simulações técnicas criadas pelo sistema QuackContador, destinadas exclusivamente para:',
@@ -615,7 +621,7 @@ const generatePDFExportable = async (formData) => {
     
     const disclaimerTexto = 'O QuackContador não se responsabiliza pelo uso indevido destas simulações.';
     
-    let yPosition = finalY + 35;
+    // A posição Y será definida após o título do aviso legal
     avisoTexto.forEach(linha => {
       if (linha.includes('Restrições de Uso:') || linha.includes('Validade Legal:') || linha.includes('Canal Oficial:')) {
         doc.setFont('helvetica', 'bold');
@@ -623,6 +629,28 @@ const generatePDFExportable = async (formData) => {
       } else {
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(0, 0, 0);
+      }
+      
+      // Verifica se a linha contém o link para formatá-lo em azul
+      if (linha.includes('https://sicalc.receita.economia.gov.br/sicalc/principal')) {
+        const parts = linha.split('https://sicalc.receita.economia.gov.br/sicalc/principal');
+        
+        // Texto introdutório
+        doc.text(parts[0], 20, yPosition);
+        yPosition += 5; // Pula para a próxima linha
+        
+        // Link em azul na linha de baixo, alinhado com o texto acima
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(0, 0, 255); // Azul
+        doc.textWithLink('https://sicalc.receita.economia.gov.br/sicalc/principal', 
+                        20, // Mesmo alinhamento do texto acima
+                        yPosition, 
+                        { url: 'https://sicalc.receita.economia.gov.br/sicalc/principal' });
+        
+        // Volta a cor padrão para as próximas linhas
+        doc.setTextColor(0, 0, 0);
+        yPosition += 5;
+        return;
       }
       
       // Usa splitTextToSize para quebrar linhas longas
@@ -639,25 +667,27 @@ const generatePDFExportable = async (formData) => {
       }
     });
     
-    // Adiciona o disclaimer próximo ao rodapé
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(255, 0, 0); // Vermelho
-    const disclaimerY = pageHeight - 15; // Posiciona 20mm do final da página
-    const disclaimerLines = doc.splitTextToSize(disclaimerTexto, pageWidth - 40);
+    // Nota final - posicionada mais próxima do rodapé
+    const footerY = pageHeight - 15; // Posição fixa do rodapé
+    const notaFinalY = footerY - 3; 
     
-    if (Array.isArray(disclaimerLines)) {
-      disclaimerLines.forEach((linha, index) => {
-        doc.text(linha, 20, disclaimerY + (index * 4));
-      });
-    } else {
-      doc.text(disclaimerLines, 20, disclaimerY);
-    }
+    // Texto de isenção de responsabilidade
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(200, 0, 0); // Vermelho
+    doc.text(disclaimerTexto, 20, notaFinalY);
     
-    // Rodapé igual ao GPSViewer
-    doc.setFontSize(8);
-    doc.setTextColor(108, 117, 125);
-    doc.text(`Documento gerado em ${dataGeracao}`, 20, pageHeight - 10);
-    doc.text('QuackContador © 2025', pageWidth - 20, pageHeight - 10, { align: 'right' });
+    // Linha do rodapé
+    doc.setDrawColor(220, 220, 220);
+    doc.setLineWidth(0.5);
+    doc.line(20, footerY, pageWidth - 20, footerY);
+    
+    // Textos do rodapé
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(6.3); 
+    doc.setTextColor(120, 120, 120);
+    doc.text(`Documento gerado em ${new Date().toLocaleString('pt-BR')}`, 20, footerY + 5);
+    doc.text(`QuackContador © ${new Date().getFullYear()}`, pageWidth - 20, footerY + 5, { align: 'right' });
     
     const pdfBlob = doc.output('blob');
     const pdfUrl = URL.createObjectURL(pdfBlob);
