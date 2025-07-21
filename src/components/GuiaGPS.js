@@ -2,11 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import { useUserData } from '../contexts/UserDataContext';
 import { Form, Row, Col, InputGroup, Alert } from 'react-bootstrap';
-import { useNavigate, useLocation } from 'react-router-dom';
+// useNavigate e useLocation importados com alias para evitar conflitos
 import { Person, CreditCard, Calendar, FileEarmarkText } from 'react-bootstrap-icons';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { useUserEmail } from '../hooks/useUserEmail';
+import { useNavigate as useRouterNavigate, useLocation } from 'react-router-dom';
 
 // Adiciona o plugin autoTable ao jsPDF
 jsPDF.autoTable = autoTable; 
@@ -238,7 +239,7 @@ const styles = {
 };
 
 const GuiaGPS = () => {
-  const navigate = useNavigate();
+  const navigate = useRouterNavigate();
   const location = useLocation();
   // Obtém os dados do usuário logado
   const { name: userName } = useUserEmail();
@@ -258,9 +259,11 @@ const GuiaGPS = () => {
     competencia: userData.competencia || ''
   });
   
+  // Extrai os valores necessários do formData
+  const { nome, cpf, dataNascimento, nit } = formData;
+  
   // Atualiza o contexto quando os dados do formulário mudam
   useEffect(() => {
-    const { nome, cpf, dataNascimento, nit } = formData;
     // Só atualiza se algum dos valores for diferente do atual no contexto
     if (userData.nome !== nome || 
         userData.cpf !== cpf || 
@@ -268,17 +271,22 @@ const GuiaGPS = () => {
         userData.nit !== nit) {
       updateUserData({ nome, cpf, dataNascimento, nit });
     }
-  }, [formData.nome, formData.cpf, formData.dataNascimento, formData.nit, updateUserData, userData]);
+  }, [nome, cpf, dataNascimento, nit, updateUserData, userData]);
   
   // Atualiza o valor quando receber da rota
   useEffect(() => {
-    if (location.state?.valorInss && location.state.valorInss !== formData.valor) {
-      setFormData(prev => ({
-        ...prev,
-        valor: location.state.valorInss
-      }));
+    const valorInss = location.state?.valorInss;
+    if (valorInss) {
+      setFormData(prev => {
+        // Só atualiza se o valor for diferente
+        if (prev.valor === valorInss) return prev;
+        return {
+          ...prev,
+          valor: valorInss
+        };
+      });
     }
-  }, [location.state?.valorInss, formData.valor]);
+  }, [location.state?.valorInss]); // Apenas o valorInss como dependência
 
   // Atualiza a competência quando mês ou ano mudam
   useEffect(() => {
@@ -353,23 +361,38 @@ const GuiaGPS = () => {
 
   // Carrega o valor do INSS da rota quando o componente é montado
   useEffect(() => {
-    if (location.state?.valorInss) {
+    // Usamos uma variável para controlar se o efeito já foi executado
+    const valorInss = location.state?.valorInss;
+    
+    // Só executa se houver um valor de INSS no estado da rota
+    if (valorInss) {
       try {
         // Converte para número e formata para o padrão brasileiro (vírgula como separador decimal)
-        const valorNumerico = parseFloat(location.state.valorInss);
+        const valorNumerico = parseFloat(valorInss);
         if (!isNaN(valorNumerico)) {
           const valorFormatado = valorNumerico.toLocaleString('pt-BR', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
           });
           
-          setFormData(prev => ({
-            ...prev,
-            valor: valorFormatado
-          }));
+          // Atualiza o estado local com o valor formatado
+          setFormData(prev => {
+            // Só atualiza se o valor for diferente
+            if (prev.valor === valorFormatado) return prev;
+            return {
+              ...prev,
+              valor: valorFormatado
+            };
+          });
           
-          // Atualiza o contexto com o valor formatado
-          updateUserData({ valor: valorFormatado });
+          // Atualiza o contexto com o valor formatado usando setTimeout
+          // para evitar o loop de atualização
+          setTimeout(() => {
+            updateUserData(prev => ({
+              ...prev,
+              valor: valorFormatado
+            }));
+          }, 0);
         }
       } catch (error) {
         console.error('Erro ao formatar valor do INSS:', error);
@@ -377,24 +400,26 @@ const GuiaGPS = () => {
           ...prev,
           valor: '0,00'
         }));
-        
-        // Atualiza o contexto com valor padrão em caso de erro
-        updateUserData({ valor: '0,00' });
       }
     }
-  }, [location.state?.valorInss, updateUserData]); // Adicionado updateUserData como dependência
+  }, [location.state?.valorInss, updateUserData]); // Apenas as dependências necessárias
 
   // Atualiza os campos do formulário
   const handleChange = (e) => {
     const { name, value } = e.target;
     
-    // Atualiza o estado local imediatamente para melhor resposta da UI
+    // Atualiza o estado local primeiro
     setFormData(prev => {
       const newData = { ...prev, [name]: value };
       
-      // Atualiza o contexto com os dados relevantes
-      const { nome, cpf, dataNascimento, nit } = newData;
-      updateUserData({ nome, cpf, dataNascimento, nit });
+      // Atualiza o contexto apenas para campos específicos
+      if (['nome', 'cpf', 'dataNascimento', 'nit'].includes(name)) {
+        const { nome, cpf, dataNascimento, nit } = newData;
+        // Usamos setTimeout para evitar o loop de atualização
+        setTimeout(() => {
+          updateUserData({ nome, cpf, dataNascimento, nit });
+        }, 0);
+      }
       
       return newData;
     });
@@ -432,7 +457,10 @@ const GuiaGPS = () => {
       }));
       
       // Atualiza o contexto com o CPF formatado
-      updateUserData({ cpf: cpfFormatado });
+      setTimeout(() => {
+        updateUserData({ cpf: cpfFormatado });
+      }, 0);
+      
       return;
     }
     
@@ -446,7 +474,9 @@ const GuiaGPS = () => {
       
       // Atualiza o contexto com a data formatada
       if (validarDataBrasileira(dataFormatada)) {
-        updateUserData({ dataNascimento: dataFormatada });
+        setTimeout(() => {
+          updateUserData({ dataNascimento: dataFormatada });
+        }, 0);
       }
       return;
     }
@@ -461,7 +491,9 @@ const GuiaGPS = () => {
       
       // Atualiza o contexto com o NIT formatado
       if (nitFormatado.replace(/\D/g, '').length === 11) {
-        updateUserData({ nit: nitFormatado });
+        setTimeout(() => {
+          updateUserData({ nit: nitFormatado });
+        }, 0);
       }
       return;
     }
@@ -971,12 +1003,41 @@ const GuiaGPS = () => {
             
             <div style={styles.buttonContainer}>
               <button 
+                type="button"
                 onClick={() => {
-                  // Retorna para a memória de cálculo
-                  navigate('/calculos', { state: { returnToMemory: true } });
+                  navigate('/calculos', { 
+                    state: { 
+                      returnToMemory: true,
+                      valorSalario: location.state?.valorSalario || '',
+                      anoSelecionado: location.state?.anoSelecionado || new Date().getFullYear()
+                    }
+                  });
                 }}
                 disabled={carregando}
                 className={`guia-cancel-button ${carregando ? 'loading' : ''}`}
+                style={{
+                  backgroundColor: carregando ? '#cccccc' : '#f8f9fa',
+                  color: carregando ? '#999999' : '#333333',
+                  border: '1px solid #dee2e6',
+                  borderRadius: '4px',
+                  padding: '8px 16px',
+                  cursor: carregando ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s ease-in-out'
+                }}
+                onMouseOver={(e) => {
+                  if (!carregando) {
+                    e.target.style.backgroundColor = '#e9ecef';
+                    e.target.style.color = '#212529';
+                  }
+                }}
+                onMouseOut={(e) => {
+                  if (!carregando) {
+                    e.target.style.backgroundColor = '#f8f9fa';
+                    e.target.style.color = '#333333';
+                  }
+                }}
+                onMouseDown={(e) => !carregando && (e.target.style.opacity = '0.8')}
+                onMouseUp={(e) => !carregando && (e.target.style.opacity = '1')}
               >
                 Voltar
               </button>

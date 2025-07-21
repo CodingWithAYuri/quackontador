@@ -82,14 +82,122 @@ const MeusDados = () => {
 
   // Função removida para corrigir warning do ESLint
 
-  // Manipula mudanças nos campos de texto simples
+  // Formata o CPF
+  const formatarCPF = (cpf) => {
+    if (!cpf) return '';
+    
+    // Remove tudo que não for dígito
+    const valorLimpo = cpf.replace(/\D/g, '');
+    
+    // Aplica a formatação
+    let cpfFormatado = '';
+    
+    // Formatação progressiva: 000.000.000-00
+    for (let i = 0; i < valorLimpo.length; i++) {
+      if (i === 3 || i === 6) {
+        cpfFormatado += '.';
+      } else if (i === 9) {
+        cpfFormatado += '-';
+      }
+      cpfFormatado += valorLimpo[i];
+      
+      // Limita a 14 caracteres (11 dígitos + 3 caracteres especiais)
+      if (cpfFormatado.length >= 14) {
+        cpfFormatado = cpfFormatado.substring(0, 14);
+        break;
+      }
+    }
+    
+    return cpfFormatado;
+  };
+
+  // Formata o NIT/PIS/PASEP
+  const formatarNIT = (nit) => {
+    if (!nit) return '';
+    
+    // Remove tudo que não for dígito
+    const valorLimpo = nit.replace(/\D/g, '');
+    
+    // Aplica a formatação
+    let nitFormatado = '';
+    
+    // Formatação progressiva: 000.00000.00-0
+    for (let i = 0; i < valorLimpo.length; i++) {
+      if (i === 3 || i === 8) {
+        nitFormatado += '.';
+      } else if (i === 11) {
+        nitFormatado += '-';
+      }
+      nitFormatado += valorLimpo[i];
+      
+      // Limita o tamanho
+      if (nitFormatado.length >= 14) {
+        nitFormatado = nitFormatado.substring(0, 14);
+        break;
+      }
+    }
+    
+    return nitFormatado;
+  };
+
+  // Manipula mudanças nos campos de texto
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    
+    // Aplica formatação específica para CPF e NIT
+    if (name === 'cpf') {
+      const cpfFormatado = formatarCPF(value);
+      setFormData(prev => {
+        const newData = { ...prev, [name]: cpfFormatado };
+        // Atualiza o contexto global
+        updateUserData({ [name]: cpfFormatado });
+        return newData;
+      });
+    } else if (name === 'nit') {
+      const nitFormatado = formatarNIT(value);
+      setFormData(prev => {
+        const newData = { ...prev, [name]: nitFormatado };
+        // Atualiza o contexto global
+        updateUserData({ [name]: nitFormatado });
+        return newData;
+      });
+    } else {
+      setFormData(prev => {
+        const newData = { ...prev, [name]: value };
+        // Atualiza o contexto global para outros campos
+        updateUserData({ [name]: value });
+        return newData;
+      });
+    }
   };
+
+  // Formata a data de nascimento
+  const formatarDataNascimento = (data) => {
+    if (!data) return '';
+    
+    // Remove tudo que não for dígito
+    const valorLimpo = data.replace(/\D/g, '');
+    
+    // Aplica a formatação
+    let dataFormatada = '';
+    
+    // Formatação progressiva: DD/MM/AAAA
+    for (let i = 0; i < valorLimpo.length; i++) {
+      if (i === 2 || i === 4) {
+        dataFormatada += '/';
+      }
+      dataFormatada += valorLimpo[i];
+      
+      // Limita a 10 caracteres (DD/MM/AAAA)
+      if (dataFormatada.length >= 10) {
+        dataFormatada = dataFormatada.substring(0, 10);
+        break;
+      }
+    }
+    
+    return dataFormatada;
+  };
+
 
   // Envia o formulário de dados pessoais
   const handleSubmit = async (e) => {
@@ -116,7 +224,14 @@ const MeusDados = () => {
     // Valida CPF
     const cpfNumbers = formData.cpf.replace(/\D/g, '');
     if (cpfNumbers.length !== 11) {
-      setError('CPF inválido');
+      setError('CPF inválido. O CPF deve ter 11 dígitos.');
+      setLoading(false);
+      return;
+    }
+    
+    // Validação básica de CPF (apenas formato, não validação matemática)
+    if (!/^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(formData.cpf)) {
+      setError('Formato de CPF inválido. Use o formato: 000.000.000-00');
       setLoading(false);
       return;
     }
@@ -124,7 +239,28 @@ const MeusDados = () => {
     // Valida data de nascimento
     const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
     if (!dateRegex.test(formData.dataNascimento)) {
-      setError('Formato de data inválido. Use DD/MM/AAAA');
+      setError('Formato de data inválido. Use o formato DD/MM/AAAA');
+      setLoading(false);
+      return;
+    }
+    
+    // Valida se a data é válida
+    const [dia, mes, ano] = formData.dataNascimento.split('/').map(Number);
+    const data = new Date(ano, mes - 1, dia);
+    const dataAtual = new Date();
+    
+    if (data.toString() === 'Invalid Date' || 
+        data.getDate() !== dia || 
+        data.getMonth() !== mes - 1 || 
+        data.getFullYear() !== ano) {
+      setError('Data de nascimento inválida');
+      setLoading(false);
+      return;
+    }
+    
+    // Valida se a data não é futura
+    if (data > dataAtual) {
+      setError('A data de nascimento não pode ser futura');
       setLoading(false);
       return;
     }
@@ -253,25 +389,18 @@ const MeusDados = () => {
       .replace(/(-\d{1})\d+?$/, '$1');
   };
 
-  // Formata data
-  const formatDate = (value) => {
-    return value
-      .replace(/\D/g, '')
-      .replace(/(\d{2})(\d)/, '$1/$2')
-      .replace(/(\d{2})(\d)/, '$1/$2')
-      .replace(/(\/\d{4})\d+?$/, '$1');
-  };
+
 
   // Manipuladores de mudança com formatação
   const handleCPFChange = (e) => {
     const { value } = e.target;
     const formattedCPF = formatCPF(value);
-    setFormData(prev => ({
-      ...prev,
-      cpf: formattedCPF
-    }));
-    
-    // Atualiza o contexto com o CPF formatado
+    setFormData(prev => {
+      const newData = { ...prev, cpf: formattedCPF };
+      // Atualiza o contexto global
+      updateUserData({ cpf: formattedCPF });
+      return newData;
+    });
     if (formattedCPF.replace(/\D/g, '').length === 11) {
       updateUserData({ cpf: formattedCPF });
     }
@@ -280,30 +409,30 @@ const MeusDados = () => {
   const handleNITChange = (e) => {
     const { value } = e.target;
     const formattedNIT = formatNIT(value);
-    setFormData(prev => ({
-      ...prev,
-      nit: formattedNIT
-    }));
     
-    // Atualiza o contexto com o NIT formatado
-    if (formattedNIT.replace(/\D/g, '').length === 11) {
-      updateUserData({ nit: formattedNIT });
-    }
+    setFormData(prev => {
+      const newData = { ...prev, nit: formattedNIT };
+      // Atualiza o contexto com o NIT formatado
+      if (formattedNIT.replace(/\D/g, '').length === 11) {
+        updateUserData({ nit: formattedNIT });
+      }
+      return newData;
+    });
   };
 
-  const handleDateChange = (e) => {
+  const handleDataNascimentoChange = (e) => {
     const { value } = e.target;
-    const formattedDate = formatDate(value);
-    setFormData(prev => ({
-      ...prev,
-      dataNascimento: formattedDate
-    }));
+    const dataFormatada = formatarDataNascimento(value);
     
-    // Valida e atualiza o contexto com a data formatada
-    const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
-    if (dateRegex.test(formattedDate)) {
-      updateUserData({ dataNascimento: formattedDate });
-    }
+    setFormData(prev => {
+      const newData = { ...prev, dataNascimento: dataFormatada };
+      // Valida e atualiza o contexto com a data formatada
+      const validDateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
+      if (validDateRegex.test(dataFormatada)) {
+        updateUserData({ dataNascimento: dataFormatada });
+      }
+      return newData;
+    });
   };
 
   // A animação de loading é definida diretamente nos estilos inline
@@ -484,7 +613,21 @@ const MeusDados = () => {
                     name="dataNascimento"
                     placeholder="Data de Nascimento"
                     value={formData.dataNascimento}
-                    onChange={handleDateChange}
+                    onChange={handleDataNascimentoChange}
+                    onBlur={(e) => {
+                      // Garante que a data esteja no formato correto ao sair do campo
+                      const value = e.target.value;
+                      if (value && !/^\d{2}\/\d{2}\/\d{4}$/.test(value)) {
+                        const cleaned = value.replace(/\D/g, '');
+                        if (cleaned.length >= 8) {
+                          const formatted = `${cleaned.substring(0,2)}/${cleaned.substring(2,4)}/${cleaned.substring(4,8)}`;
+                          setFormData(prev => ({
+                            ...prev,
+                            dataNascimento: formatted
+                          }));
+                        }
+                      }
+                    }}
                     style={inputStyle}
                     maxLength="10"
                     required

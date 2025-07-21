@@ -488,23 +488,7 @@ const DARF = () => {
     return valido;
   };
   
-  // Formata o CPF
-  const formatarCPF = (cpf) => {
-    if (!cpf) return '';
-    
-    // Remove tudo que não for dígito
-    const numeros = cpf.replace(/\D/g, '');
-    
-    // Limita a 11 dígitos
-    const cpfLimitado = numeros.substring(0, 11);
-    
-    // Aplica a máscara
-    return cpfLimitado
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{3})(\d{1,2})/, '$1-$2')
-      .replace(/(-\d{2})\d+?$/, '$1');
-  };
+  // A função formatarCPF foi removida pois não estava sendo utilizada
   
   // Formata o valor monetário
   const formatarValor = (numeros) => {
@@ -529,12 +513,39 @@ const DARF = () => {
   // Manipulador de mudança do CPF
   const handleCPFChange = (e) => {
     const { value } = e.target;
-    const cpfFormatado = formatarCPF(value);
+    
+    // Remove qualquer formatação existente para evitar problemas
+    const valorLimpo = value.replace(/\D/g, '');
+    
+    // Aplica a formatação
+    let cpfFormatado = '';
+    
+    // Formatação progressiva: 000.000.000-00
+    for (let i = 0; i < valorLimpo.length; i++) {
+      if (i === 3 || i === 6) {
+        cpfFormatado += '.';
+      } else if (i === 9) {
+        cpfFormatado += '-';
+      }
+      cpfFormatado += valorLimpo[i];
+      
+      // Limita a 14 caracteres (11 dígitos + 3 caracteres especiais)
+      if (cpfFormatado.length >= 14) {
+        cpfFormatado = cpfFormatado.substring(0, 14);
+        break;
+      }
+    }
     
     setFormData(prev => ({
       ...prev,
       cpf: cpfFormatado
     }));
+    
+    // Atualiza o CPF no contexto global para sincronizar com outros componentes
+    // usando setTimeout para evitar loops de atualização
+    setTimeout(() => {
+      updateUserData({ cpf: cpfFormatado });
+    }, 0);
     
     // Limpa o erro de validação do CPF
     if (validationErrors.cpf) {
