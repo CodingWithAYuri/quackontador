@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useUserData } from './contexts/UserDataContext';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -20,6 +21,26 @@ import DARF from './components/DARF';
 import DARFViewer from './components/DARFViewer';
 
 function App() {
+  const { updateUserData } = useUserData();
+
+  // Efeito para sincronizar os dados do usuário do localStorage com o UserDataContext
+  useEffect(() => {
+    try {
+      const isLoggedIn = localStorage.getItem('isLoggedIn');
+      if (isLoggedIn) {
+        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+        if (userData && userData.user) {
+          updateUserData({
+            nome: userData.user.name || '',
+            email: userData.user.email || ''
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao carregar dados do usuário:', error);
+    }
+  }, [updateUserData]);
+
   const appStyles = {
     container: {
       display: 'flex',

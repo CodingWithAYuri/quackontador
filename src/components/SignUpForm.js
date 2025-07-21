@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaUser, FaEnvelope, FaLock } from 'react-icons/fa';
+import { useUserData } from '../contexts/UserDataContext';
 
 function SignUpForm() {
+  const { updateUserData } = useUserData();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -105,21 +107,20 @@ function SignUpForm() {
       const usersAfterSave = JSON.parse(localStorage.getItem('users') || '[]');
       console.log('Usuários após salvar:', usersAfterSave);
       
-      // Cria a sessão de login
-      const data = {
+      // Atualiza o contexto com os dados do novo usuário
+      updateUserData({
+        nome: newUser.name,
+        email: newUser.email
+      });
+      
+      // Faz login automático do usuário
+      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('userData', JSON.stringify({
         success: true,
         session: { id: Date.now().toString() },
-        user: {
-          id: newUser.id,
-          email: newUser.email,
-          name: newUser.name
-        }
-      };
+        user: newUser
+      }));
       
-      localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('userData', JSON.stringify(data));
-      
-      // Redireciona para a página de cálculos após cadastro bem-sucedido
       console.log('Redirecionando após cadastro para: /calculos');
       // Sempre redireciona para cálculos após o cadastro
       navigate('/calculos', { replace: true });

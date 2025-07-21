@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { FaUser, FaCalendarAlt, FaIdCard, FaArrowLeft, FaSave, FaLock } from 'react-icons/fa';
+import { FaEnvelope, FaIdCard, FaCalendarAlt, FaArrowLeft, FaSave, FaLock, FaUserTie, FaIdCardAlt } from 'react-icons/fa';
 import { useUserData } from '../contexts/UserDataContext';
 
 const MeusDados = () => {
@@ -10,6 +10,8 @@ const MeusDados = () => {
   
   // Estado local para o formulário, inicializado com os dados do contexto
   const [formData, setFormData] = useState({
+    nome: userData.nome || '',
+    email: userData.email || '',
     cpf: userData.cpf || '',
     dataNascimento: userData.dataNascimento || '',
     nit: userData.nit || ''
@@ -32,6 +34,8 @@ const MeusDados = () => {
   useEffect(() => {
     setFormData(prev => ({
       ...prev,
+      nome: userData.nome || '',
+      email: userData.email || '',
       cpf: userData.cpf || '',
       dataNascimento: userData.dataNascimento || '',
       nit: userData.nit || ''
@@ -78,6 +82,15 @@ const MeusDados = () => {
 
   // Função removida para corrigir warning do ESLint
 
+  // Manipula mudanças nos campos de texto simples
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
   // Envia o formulário de dados pessoais
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -86,8 +99,16 @@ const MeusDados = () => {
     setSuccess('');
 
     // Validação básica
-    if (!formData.cpf || !formData.dataNascimento || !formData.nit) {
+    if (!formData.nome || !formData.email || !formData.cpf || !formData.dataNascimento || !formData.nit) {
       setError('Todos os campos são obrigatórios');
+      setLoading(false);
+      return;
+    }
+
+    // Validação de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError('Por favor, insira um email válido');
       setLoading(false);
       return;
     }
@@ -112,6 +133,8 @@ const MeusDados = () => {
     try {
       // Atualiza o contexto com os novos dados
       updateUserData({
+        nome: formData.nome,
+        email: formData.email,
         cpf: formData.cpf,
         dataNascimento: formData.dataNascimento,
         nit: formData.nit
@@ -415,7 +438,33 @@ const MeusDados = () => {
             <div>
               <form onSubmit={handleSubmit}>
                 <div style={{ marginBottom: '1.5rem', position: 'relative' }}>
-                  <FaUser style={iconStyle} />
+                  <FaUserTie style={iconStyle} />
+                  <input
+                    type="text"
+                    name="nome"
+                    placeholder="Nome Completo"
+                    value={formData.nome}
+                    onChange={handleInputChange}
+                    style={inputStyle}
+                    required
+                  />
+                </div>
+
+                <div style={{ marginBottom: '1.5rem', position: 'relative' }}>
+                  <FaEnvelope style={iconStyle} />
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="E-mail"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    style={inputStyle}
+                    required
+                  />
+                </div>
+
+                <div style={{ marginBottom: '1.5rem', position: 'relative' }}>
+                  <FaIdCard style={iconStyle} />
                   <input
                     type="text"
                     name="cpf"
@@ -443,7 +492,7 @@ const MeusDados = () => {
                 </div>
                 
                 <div style={{ marginBottom: '1.5rem', position: 'relative' }}>
-                  <FaIdCard style={iconStyle} />
+                  <FaIdCardAlt style={iconStyle} />
                   <input
                     type="text"
                     name="nit"

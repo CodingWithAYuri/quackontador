@@ -1197,8 +1197,9 @@ const generatePDFExportable = async (formData) => {
     // Adiciona os dados em formato de tabela
     autoTable(doc, {
       startY: 40.6, 
-      head: [['Campo', 'Valor']],
+      head: [],
       body: tableData.map(item => [item.field, item.value]),
+      showHead: 'never',
       margin: { top: 10.15, right: margin, bottom: 20.3, left: margin },
       didDrawCell: function(data) {
         // Se for a célula do código de barras e tivermos o código

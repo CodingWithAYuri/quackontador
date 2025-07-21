@@ -17,6 +17,7 @@ export const UserDataProvider = ({ children }) => {
   // Estado para armazenar os dados do usuário
   const [userData, setUserData] = useState({
     nome: '',
+    email: '',
     cpf: '',
     dataNascimento: '',
     nit: '',
@@ -63,6 +64,7 @@ export const UserDataProvider = ({ children }) => {
   const clearUserData = () => {
     setUserData({
       nome: '',
+      email: '',
       cpf: '',
       dataNascimento: '',
       nit: '',

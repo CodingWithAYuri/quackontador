@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useUserData } from '../contexts/UserDataContext';
 import { Form, Row, Col, InputGroup } from 'react-bootstrap';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -276,7 +276,7 @@ const DARF = () => {
   
   // Estado local para o formulário
   // Função para formatar valor inicial
-  const formatarValorInicial = (valor) => {
+  const formatarValorInicial = useCallback((valor) => {
     if (!valor || valor === '0,00' || valor === 0) return '0,00';
     
     // Se já está no formato brasileiro, retorna como está
@@ -316,7 +316,7 @@ const DARF = () => {
     }
     
     return '0,00';
-  };
+  }, []);
 
   const [formData, setFormData] = useState({
     nome: userData.nome || '',
@@ -336,7 +336,7 @@ const DARF = () => {
   
   // Força a formatação do valor inicial após o componente montar
   useEffect(() => {
-    if (formData.valorIr && formData.valorIr !== '0,00') {
+    if (formData.valorIr) {
       const valorAtualFormatado = formatarValorInicial(formData.valorIr);
       if (valorAtualFormatado !== formData.valorIr) {
         setFormData(prev => ({
@@ -345,18 +345,80 @@ const DARF = () => {
         }));
       }
     }
-  }, []); // Executa apenas uma vez após o mount
+  }, [formData.valorIr, formatarValorInicial]); // Incluídas as dependências necessárias
 
   // Atualiza o estado quando location.state mudar
   useEffect(() => {
-    if (location.state?.valorIr && location.state.valorIr !== formData.valorIr) {
-      const valorFormatado = formatarValorInicial(location.state.valorIr);
+    if (!location.state?.valorIr) return;
+    
+    // Função auxiliar para formatar o valor
+    const formatarValor = (valor) => {
+      if (!valor || valor === '0,00' || valor === 0) return '0,00';
+      
+      // Se já está no formato brasileiro, retorna como está
+      if (typeof valor === 'string' && valor.includes(',') && !valor.includes('.')) {
+        return valor;
+      }
+      
+      // Converte para string
+      const valorStr = String(valor);
+      
+      // Se é um número decimal (formato americano: 12592.30)
+      if (valorStr.includes('.') && /^\d+\.\d+$/.test(valorStr)) {
+        const [parteInteira, parteDecimal] = valorStr.split('.');
+        // Adiciona separadores de milhares na parte inteira
+        const parteInteiraFormatada = parteInteira.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        // Garante 2 casas decimais
+        const parteDecimalFormatada = parteDecimal.padEnd(2, '0').substring(0, 2);
+        return `${parteInteiraFormatada},${parteDecimalFormatada}`;
+      }
+      
+      // Se é apenas números inteiros ou string numérica
+      const numeros = valorStr.replace(/\D/g, '');
+      if (numeros && numeros !== '0') {
+        const numero = parseInt(numeros, 10);
+        // Se o número é maior que 999, trata como centavos
+        if (numero > 999) {
+          const numeroDecimal = numero / 100;
+          const numeroStr = numeroDecimal.toFixed(2);
+          const [parteInteira, parteDecimal] = numeroStr.split('.');
+          const parteInteiraFormatada = parteInteira.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+          return `${parteInteiraFormatada},${parteDecimal}`;
+        } else {
+          // Números pequenos, adiciona ,00
+          const parteInteiraFormatada = numero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+          return `${parteInteiraFormatada},00`;
+        }
+      }
+      
+      return '0,00';
+    };
+    
+    setFormData(prev => {
+      // Só atualiza se o valor do location.state for diferente do atual
+      if (location.state.valorIr !== prev.valorIr) {
+        const valorFormatado = formatarValor(location.state.valorIr);
+        return {
+          ...prev,
+          valorIr: valorFormatado
+        };
+      }
+      return prev;
+    });
+  }, [location.state]);
+  
+  // Atualiza o formData quando userData mudar
+  useEffect(() => {
+    if (userData) {
       setFormData(prev => ({
         ...prev,
-        valorIr: valorFormatado
+        nome: userData.nome || prev.nome,
+        cpf: userData.cpf || prev.cpf,
+        mesReferencia: userData.mesReferencia || prev.mesReferencia,
+        anoReferencia: userData.anoReferencia || prev.anoReferencia
       }));
     }
-  }, [location.state]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [userData]); // Executa quando userData mudar
   
   // Atualiza o contexto quando o componente for desmontado ou quando o usuário sair da página
   useEffect(() => {

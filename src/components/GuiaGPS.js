@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useUserData } from '../contexts/UserDataContext';
 import { Form, Row, Col, InputGroup, Alert } from 'react-bootstrap';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, Person, CreditCard, Calendar, FileEarmarkText } from 'react-bootstrap-icons';
+import { Person, CreditCard, Calendar, FileEarmarkText } from 'react-bootstrap-icons';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { useUserEmail } from '../hooks/useUserEmail';
@@ -261,36 +261,46 @@ const GuiaGPS = () => {
   // Atualiza o contexto quando os dados do formulário mudam
   useEffect(() => {
     const { nome, cpf, dataNascimento, nit } = formData;
-    updateUserData({ nome, cpf, dataNascimento, nit });
-  }, [formData, updateUserData]); // Incluindo formData e updateUserData como dependências
+    // Só atualiza se algum dos valores for diferente do atual no contexto
+    if (userData.nome !== nome || 
+        userData.cpf !== cpf || 
+        userData.dataNascimento !== dataNascimento || 
+        userData.nit !== nit) {
+      updateUserData({ nome, cpf, dataNascimento, nit });
+    }
+  }, [formData.nome, formData.cpf, formData.dataNascimento, formData.nit, updateUserData, userData]);
   
   // Atualiza o valor quando receber da rota
   useEffect(() => {
-    if (location.state?.valorInss) {
+    if (location.state?.valorInss && location.state.valorInss !== formData.valor) {
       setFormData(prev => ({
         ...prev,
         valor: location.state.valorInss
       }));
     }
-  }, [location.state?.valorInss, setFormData]);
+  }, [location.state?.valorInss, formData.valor]);
 
   // Atualiza a competência quando mês ou ano mudam
   useEffect(() => {
     if (formData.mesReferencia && formData.anoReferencia) {
       const competencia = `${formData.mesReferencia.padStart(2, '0')}/${formData.anoReferencia}`;
-      setFormData(prev => ({
-        ...prev,
-        competencia
-      }));
       
-      // Atualiza o contexto com mês, ano e competência
-      updateUserData({
-        mesReferencia: formData.mesReferencia,
-        anoReferencia: formData.anoReferencia,
-        competencia: competencia
-      });
+      // Só atualiza se a competência for diferente da atual
+      if (competencia !== formData.competencia) {
+        setFormData(prev => ({
+          ...prev,
+          competencia
+        }));
+        
+        // Atualiza o contexto com mês, ano e competência
+        updateUserData({
+          mesReferencia: formData.mesReferencia,
+          anoReferencia: formData.anoReferencia,
+          competencia: competencia
+        });
+      }
     }
-  }, [formData.mesReferencia, formData.anoReferencia, updateUserData]); // Adicionado updateUserData como dependência
+  }, [formData.mesReferencia, formData.anoReferencia, formData.competencia, updateUserData]);
   
   // Função para calcular o vencimento (15 do mês seguinte, ou próximo dia útil se for final de semana)
   const calcularVencimento = (mesAno) => {
@@ -740,39 +750,11 @@ const GuiaGPS = () => {
   return (
     <div style={styles.pageContainer}>
       <div style={styles.contentContainer}>
-        <button 
-          onClick={() => navigate('/calculos', {
-            state: {
-              manterValores: true,
-              valorSalario: location.state?.valorSalario || '',
-              anoSelecionado: location.state?.anoSelecionado || new Date().getFullYear()
-            }
-          })}
-          style={{
-            ...styles.backLink,
-            background: 'none',
-            border: 'none',
-            color: 'inherit',
-            cursor: 'pointer',
-            padding: 0,
-            font: 'inherit',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            textDecoration: 'none',
-            '&:hover': {
-              textDecoration: 'underline',
-            }
-          }}
-        >
-          <ArrowLeft style={styles.icon} />
-          Voltar para a memória dos cálculos
-        </button>
         
         <div style={styles.formContainer}>
-          <h2 style={styles.formTitle}>Gerar Guia de Previdência Social</h2>
+          <h2 style={styles.formTitle}>GPS</h2>
           <p style={styles.formSubtitle}>
-            Preencha os dados abaixo para gerar a Guia da Previdência Social.
+          Guia de Previdência Social
           </p>
           
           {erro && (
@@ -841,9 +823,7 @@ const GuiaGPS = () => {
                       aria-describedby="cpfHelp"
                     />
                   </InputGroup>
-                  <small id="cpfHelp" style={{ color: '#aaa', fontSize: '0.7rem', marginTop: '0.25rem' }}>
-                    Apenas números
-                  </small>
+
                 </div>
               </Col>
             </Row>
@@ -911,9 +891,6 @@ const GuiaGPS = () => {
                     aria-describedby="nitHelp"
                   />
                 </InputGroup>
-                <small id="nitHelp" style={{ color: '#aaa', fontSize: '0.75rem' }}>
-                  Formato: 000.00000.00-0
-                </small>
               </Col>
               
               <Col md={4} style={styles.inputGroup}>
@@ -989,9 +966,6 @@ const GuiaGPS = () => {
                     </Form.Select>
                   </InputGroup>
                 </div>
-                <span style={styles.formText}>
-                  Mês/Ano de referência da guia
-                </span>
               </Col>
             </Row>
             
@@ -1004,7 +978,7 @@ const GuiaGPS = () => {
                 disabled={carregando}
                 className={`guia-cancel-button ${carregando ? 'loading' : ''}`}
               >
-                Cancelar
+                Voltar
               </button>
               
               <button 
