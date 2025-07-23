@@ -431,10 +431,16 @@ const DARF = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     
+    // Atualiza o estado local
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
+    
+    // Atualiza o contexto global para campos compartilhados
+    if (['nome', 'cpf', 'dataNascimento', 'nit', 'mesReferencia', 'anoReferencia'].includes(name)) {
+      updateUserData({ [name]: value });
+    }
     
     // Limpa o erro de validação do campo alterado
     if (validationErrors[name]) {
@@ -510,42 +516,38 @@ const DARF = () => {
     return `${parteInteiraFormatada},${parteDecimal}`;
   };
   
+  // Formata o CPF enquanto digita
+  const formatarCPF = (value) => {
+    // Remove tudo que não for dígito
+    const numeros = value.replace(/\D/g, '');
+    
+    // Limita a 11 dígitos
+    const cpf = numeros.slice(0, 11);
+    
+    // Aplica a formatação
+    if (cpf.length <= 3) return cpf;
+    if (cpf.length <= 6) return `${cpf.slice(0, 3)}.${cpf.slice(3)}`;
+    if (cpf.length <= 9) return `${cpf.slice(0, 3)}.${cpf.slice(3, 6)}.${cpf.slice(6)}`;
+    return `${cpf.slice(0, 3)}.${cpf.slice(3, 6)}.${cpf.slice(6, 9)}-${cpf.slice(9, 11)}`;
+  };
+
   // Manipulador de mudança do CPF
   const handleCPFChange = (e) => {
     const { value } = e.target;
     
-    // Remove qualquer formatação existente para evitar problemas
-    const valorLimpo = value.replace(/\D/g, '');
+    // Formata o CPF enquanto digita
+    const cpfFormatado = formatarCPF(value);
     
-    // Aplica a formatação
-    let cpfFormatado = '';
-    
-    // Formatação progressiva: 000.000.000-00
-    for (let i = 0; i < valorLimpo.length; i++) {
-      if (i === 3 || i === 6) {
-        cpfFormatado += '.';
-      } else if (i === 9) {
-        cpfFormatado += '-';
-      }
-      cpfFormatado += valorLimpo[i];
-      
-      // Limita a 14 caracteres (11 dígitos + 3 caracteres especiais)
-      if (cpfFormatado.length >= 14) {
-        cpfFormatado = cpfFormatado.substring(0, 14);
-        break;
-      }
-    }
-    
+    // Atualiza o estado local
     setFormData(prev => ({
       ...prev,
       cpf: cpfFormatado
     }));
     
-    // Atualiza o CPF no contexto global para sincronizar com outros componentes
-    // usando setTimeout para evitar loops de atualização
-    setTimeout(() => {
+    // Atualiza o contexto global apenas quando o CPF estiver completo
+    if (cpfFormatado.replace(/\D/g, '').length === 11) {
       updateUserData({ cpf: cpfFormatado });
-    }, 0);
+    }
     
     // Limpa o erro de validação do CPF
     if (validationErrors.cpf) {

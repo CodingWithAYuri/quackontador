@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { FaEnvelope, FaIdCard, FaCalendarAlt, FaArrowLeft, FaSave, FaLock, FaUserTie, FaIdCardAlt } from 'react-icons/fa';
 import { useUserData } from '../contexts/UserDataContext';
@@ -7,6 +7,9 @@ const MeusDados = () => {
   const navigate = useNavigate();
   // Usa o hook useUserData para acessar e atualizar os dados do usuário
   const { userData, updateUserData } = useUserData();
+  
+  // Estado para controlar o modo de edição
+  const [isEditing, setIsEditing] = useState(false);
   
   // Estado local para o formulário, inicializado com os dados do contexto
   const [formData, setFormData] = useState({
@@ -29,18 +32,51 @@ const MeusDados = () => {
     confirmPassword: ''
   });
   const [passwordErrors, setPasswordErrors] = useState({});
+  
+  // Usamos useRef para rastrear a montagem inicial e o estado anterior
+  const isInitialMount = useRef(true);
+  const prevUserDataRef = useRef(userData);
 
   // Atualiza o estado local quando os dados do contexto mudam
   useEffect(() => {
-    setFormData(prev => ({
-      ...prev,
-      nome: userData.nome || '',
-      email: userData.email || '',
-      cpf: userData.cpf || '',
-      dataNascimento: userData.dataNascimento || '',
-      nit: userData.nit || ''
-    }));
-  }, [userData]);
+    // Se for a primeira renderização, apenas armazena os dados iniciais
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      prevUserDataRef.current = userData;
+      return;
+    }
+
+    // Atualiza o estado local sempre que houver mudanças no userData
+    // Isso garante que as alterações de CPF de outros componentes sejam refletidas
+    setFormData(prev => {
+      // Verifica se algum campo relevante mudou
+      const hasChanges = 
+        prev.nome !== userData.nome ||
+        prev.email !== userData.email ||
+        prev.cpf !== userData.cpf ||
+        prev.dataNascimento !== userData.dataNascimento ||
+        prev.nit !== userData.nit;
+
+      // Se não houve mudanças, retorna o estado anterior
+      if (!hasChanges) return prev;
+
+      // Atualiza os campos que mudaram
+      return {
+        ...prev,
+        nome: userData.nome || '',
+        email: userData.email || '',
+        cpf: userData.cpf || '',
+        dataNascimento: userData.dataNascimento || '',
+        nit: userData.nit || ''
+      };
+    });
+
+    // Atualiza a referência para os dados atuais
+    prevUserDataRef.current = userData;
+    
+    // Se estivermos em modo de edição e o CPF foi atualizado, mantemos o modo de edição
+    // Isso evita que o formulário saia do modo de edição quando o CPF é atualizado por outro componente
+  }, [userData, isEditing]);
 
   // Valida a força da senha
   const validatePassword = (password) => {
@@ -369,14 +405,33 @@ const MeusDados = () => {
     }
   };
 
-  // Formata CPF
+  // Formata CPF - Mantendo apenas uma função de formatação (removendo a duplicada)
   const formatCPF = (value) => {
-    return value
-      .replace(/\D/g, '')
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{3})(\d{1,2})/, '$1-$2')
-      .replace(/(-\d{2})\d+?$/, '$1');
+    if (!value) return '';
+    
+    // Remove tudo que não for dígito
+    const valorLimpo = value.replace(/\D/g, '');
+    
+    // Aplica a formatação
+    let cpfFormatado = '';
+    
+    // Formatação progressiva: 000.000.000-00
+    for (let i = 0; i < valorLimpo.length; i++) {
+      if (i === 3 || i === 6) {
+        cpfFormatado += '.';
+      } else if (i === 9) {
+        cpfFormatado += '-';
+      }
+      cpfFormatado += valorLimpo[i];
+      
+      // Limita a 14 caracteres (11 dígitos + 3 caracteres especiais)
+      if (cpfFormatado.length >= 14) {
+        cpfFormatado = cpfFormatado.substring(0, 14);
+        break;
+      }
+    }
+    
+    return cpfFormatado;
   };
 
   // Formata NIT/PIS/PASEP
@@ -391,16 +446,18 @@ const MeusDados = () => {
 
 
 
-  // Manipuladores de mudança com formatação
+  // Manipulador de mudança para CPF
   const handleCPFChange = (e) => {
     const { value } = e.target;
     const formattedCPF = formatCPF(value);
-    setFormData(prev => {
-      const newData = { ...prev, cpf: formattedCPF };
-      // Atualiza o contexto global
-      updateUserData({ cpf: formattedCPF });
-      return newData;
-    });
+    
+    // Atualiza o estado local
+    setFormData(prev => ({
+      ...prev,
+      cpf: formattedCPF
+    }));
+    
+    // Atualiza o contexto global apenas quando o CPF estiver completo (11 dígitos)
     if (formattedCPF.replace(/\D/g, '').length === 11) {
       updateUserData({ cpf: formattedCPF });
     }
@@ -473,17 +530,39 @@ const MeusDados = () => {
     border: '1px solid rgba(255, 255, 255, 0.2)' // Nova borda para combinar com ContactForm
   };
   
+  // Estilo base para os campos de formulário - Atualizado para combinar com DARF.js
+  const inputBaseStyle = {
+    width: '100%',
+    padding: '0.5rem 0.5rem 0.5rem 2.5rem',
+    borderRadius: '0 6px 6px 0',
+    border: '1px solid #555',
+    borderLeft: 'none',
+    backgroundColor: 'var(--input-bg)',
+    color: '#fff',
+    fontSize: '0.95rem',
+    height: '38px',
+    boxSizing: 'border-box',
+    transition: 'all 0.2s ease-in-out',
+    '&:focus': {
+      backgroundColor: 'var(--input-bg)',
+      color: '#fff',
+      borderColor: '#80bdff',
+      boxShadow: '0 0 0 0.2rem rgba(0, 123, 255, 0.25)'
+    },
+    '&:disabled': {
+      backgroundColor: '#3a3a3a',
+      color: '#777',
+      cursor: 'not-allowed'
+    }
+  };
+  
   // Estilo para os campos de formulário
   const inputStyle = {
-    width: '100%',
-    padding: '0.8rem 1rem 0.8rem 2.5rem',
-    borderRadius: '4px',
-    border: '1px solid #555',
-    backgroundColor: 'var(--input-bg)',
-    color: 'var(--text-primary)',
-    fontSize: '0.95rem',
-    transition: 'all 0.2s ease-in-out',
-    boxSizing: 'border-box'
+    ...inputBaseStyle,
+    backgroundColor: isEditing ? 'var(--input-bg)' : '#3a3a3a',
+    color: '#fff', // Texto sempre branco
+    cursor: isEditing ? 'text' : 'not-allowed',
+    opacity: isEditing ? 1 : 0.8
   };
   
   // Estilo para os ícones nos campos
@@ -574,7 +653,10 @@ const MeusDados = () => {
                     placeholder="Nome Completo"
                     value={formData.nome}
                     onChange={handleInputChange}
-                    style={inputStyle}
+                    style={{
+                      ...inputStyle
+                    }}
+                    disabled={!isEditing}
                     required
                   />
                 </div>
@@ -587,7 +669,10 @@ const MeusDados = () => {
                     placeholder="E-mail"
                     value={formData.email}
                     onChange={handleInputChange}
-                    style={inputStyle}
+                    style={{
+                      ...inputStyle
+                    }}
+                    disabled={!isEditing}
                     required
                   />
                 </div>
@@ -600,7 +685,10 @@ const MeusDados = () => {
                     placeholder="CPF"
                     value={formData.cpf}
                     onChange={handleCPFChange}
-                    style={inputStyle}
+                    style={{
+                      ...inputStyle
+                    }}
+                    disabled={!isEditing}
                     maxLength="14"
                     required
                   />
@@ -628,7 +716,10 @@ const MeusDados = () => {
                         }
                       }
                     }}
-                    style={inputStyle}
+                    style={{
+                      ...inputStyle
+                    }}
+                    disabled={!isEditing}
                     maxLength="10"
                     required
                   />
@@ -642,34 +733,96 @@ const MeusDados = () => {
                     placeholder="NIT/PIS/PASEP"
                     value={formData.nit}
                     onChange={handleNITChange}
-                    style={inputStyle}
+                    style={{
+                      ...inputStyle
+                    }}
+                    disabled={!isEditing}
                     maxLength="14"
                     required
                   />
                 </div>
                 
-                <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginTop: '1rem' }}>
-                  <button 
-                    type="submit" 
-                    disabled={loading} 
-                    style={{...buttonStyle, opacity: loading ? 0.7 : 1}}
-                  >
-                    {loading ? (
-                      <span style={{
-                        display: 'inline-block',
-                        width: '1rem',
-                        height: '1rem',
-                        border: '2px solid rgba(255, 255, 255, 0.3)',
-                        borderRadius: '50%',
-                        borderTopColor: '#fff',
-                        animation: 'spin 1s ease-in-out infinite',
-                        marginRight: '0.5rem'
-                      }}></span>
-                    ) : (
-                      <FaSave style={{ marginRight: '0.5rem' }} />
-                    )}
-                    {loading ? 'Salvando...' : 'Salvar Dados'}
-                  </button>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', width: '100%', marginTop: '1rem' }}>
+                  {!isEditing ? (
+                    <button 
+                      type="button"
+                      onClick={() => setIsEditing(true)}
+                      style={{
+                        ...buttonStyle,
+                        backgroundColor: '#1a73e8',
+                        border: 'none',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.5rem',
+                        minWidth: '120px'
+                      }}
+                    >
+                      <FaUserTie />
+                      Editar Dados
+                    </button>
+                  ) : (
+                    <>
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          setIsEditing(false);
+                          // Reseta para os valores originais
+                          setFormData({
+                            nome: userData.nome || '',
+                            email: userData.email || '',
+                            cpf: userData.cpf || '',
+                            dataNascimento: userData.dataNascimento || '',
+                            nit: userData.nit || ''
+                          });
+                        }}
+                        style={{
+                          ...buttonStyle,
+                          backgroundColor: '#dc3545',
+                          border: 'none',
+                          padding: '0.5rem 1rem',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '0.5rem',
+                          minWidth: '120px'
+                        }}
+                      >
+                        Cancelar
+                      </button>
+                      <button 
+                        type="submit" 
+                        disabled={loading} 
+                        style={{
+                          ...buttonStyle,
+                          opacity: loading ? 0.7 : 1,
+                          padding: '0.5rem 1rem',
+                          minWidth: '120px'
+                        }}
+                      >
+                        {loading ? (
+                          <span style={{
+                            display: 'inline-block',
+                            width: '1rem',
+                            height: '1rem',
+                            border: '2px solid rgba(255, 255, 255, 0.3)',
+                            borderRadius: '50%',
+                            borderTopColor: '#fff',
+                            animation: 'spin 1s ease-in-out infinite',
+                            marginRight: '0.5rem'
+                          }}></span>
+                        ) : (
+                          <FaSave style={{ marginRight: '0.5rem' }} />
+                        )}
+                        {loading ? 'Salvando...' : 'Salvar Dados'}
+                      </button>
+                    </>
+                  )}
                 </div>
               </form>
             </div>

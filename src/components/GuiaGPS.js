@@ -1,5 +1,5 @@
 // Importa as dependências
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useUserData } from '../contexts/UserDataContext';
 import { Form, Row, Col, InputGroup, Alert } from 'react-bootstrap';
 // useNavigate e useLocation importados com alias para evitar conflitos
@@ -259,19 +259,15 @@ const GuiaGPS = () => {
     competencia: userData.competencia || ''
   });
   
-  // Extrai os valores necessários do formData
-  const { nome, cpf, dataNascimento, nit } = formData;
+  // Form data is now accessed directly from formData
   
-  // Atualiza o contexto quando os dados do formulário mudam
-  useEffect(() => {
-    // Só atualiza se algum dos valores for diferente do atual no contexto
-    if (userData.nome !== nome || 
-        userData.cpf !== cpf || 
-        userData.dataNascimento !== dataNascimento || 
-        userData.nit !== nit) {
-      updateUserData({ nome, cpf, dataNascimento, nit });
+  // Atualiza o contexto quando o formulário perde o foco ou quando o usuário finaliza a edição
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    if (value && (name === 'cpf' || name === 'nit' || name === 'dataNascimento')) {
+      updateUserData({ [name]: value });
     }
-  }, [nome, cpf, dataNascimento, nit, updateUserData, userData]);
+  };
   
   // Atualiza o valor quando receber da rota
   useEffect(() => {
@@ -408,60 +404,43 @@ const GuiaGPS = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     
-    // Atualiza o estado local primeiro
-    setFormData(prev => {
-      const newData = { ...prev, [name]: value };
+    // Para o CPF, sempre formate independentemente do valor
+    if (name === 'cpf') {
+      const formattedCPF = formatarCPF(value);
       
-      // Atualiza o contexto apenas para campos específicos
-      if (['nome', 'cpf', 'dataNascimento', 'nit'].includes(name)) {
-        const { nome, cpf, dataNascimento, nit } = newData;
-        // Usamos setTimeout para evitar o loop de atualização
-        setTimeout(() => {
-          updateUserData({ nome, cpf, dataNascimento, nit });
-        }, 0);
-      }
-      
-      return newData;
-    });
-    
-    // Formatação do CPF
-    if (name === 'cpf' && value) {
-      // Remove todos os caracteres não numéricos
-      const cpfLimpo = value.replace(/\D/g, '');
-      
-      // Limita a 11 dígitos
-      const cpfLimitado = cpfLimpo.slice(0, 11);
-      
-      // Aplica a formatação
-      let cpfFormatado = cpfLimitado;
-      if (cpfLimitado.length > 9) {
-        cpfFormatado = cpfLimitado.replace(
-          /^(\d{3})(\d{3})(\d{3})(\d{1,2}).*$/,
-          (_, p1, p2, p3, p4) => `${p1}.${p2}.${p3}-${p4}`
-        );
-      } else if (cpfLimitado.length > 6) {
-        cpfFormatado = cpfLimitado.replace(
-          /^(\d{3})(\d{3})(\d{1,3})/,
-          (_, p1, p2, p3) => `${p1}.${p2}.${p3}`
-        );
-      } else if (cpfLimitado.length > 3) {
-        cpfFormatado = cpfLimitado.replace(
-          /^(\d{3})(\d{1,3})/,
-          (_, p1, p2) => `${p1}.${p2}`
-        );
-      }
-      
+      // Atualiza o estado local
       setFormData(prev => ({
         ...prev,
-        [name]: cpfFormatado
+        [name]: formattedCPF
       }));
       
-      // Atualiza o contexto com o CPF formatado
-      setTimeout(() => {
-        updateUserData({ cpf: cpfFormatado });
-      }, 0);
-      
+      // Atualiza o contexto global quando o CPF estiver completo
+      if (formattedCPF.replace(/\D/g, '').length === 11) {
+        updateUserData({ cpf: formattedCPF });
+      }
       return;
+    }
+    
+    // Para outros campos, mantenha a lógica existente
+    let newValue = value;
+    
+    if (name === 'dataNascimento' && value) {
+      newValue = formatarDataBrasileira(value);
+    } else if (name === 'nit' && value) {
+      newValue = formatarNIT(value);
+    }
+    
+    // Atualiza apenas se o valor mudou
+    setFormData(prev => {
+      if (prev[name] === newValue) return prev;
+      return { ...prev, [name]: newValue };
+    });
+    
+    // Atualiza o contexto global para NIT e Data de Nascimento
+    if (name === 'nit' && newValue.replace(/\D/g, '').length >= 10) {
+      updateUserData({ nit: newValue });
+    } else if (name === 'dataNascimento' && newValue.length === 10) {
+      updateUserData({ dataNascimento: newValue });
     }
     
     // Formatação da Data de Nascimento
@@ -504,14 +483,22 @@ const GuiaGPS = () => {
     }));
   };
 
-  // Formata CPF
+  // Formata o CPF enquanto digita
   const formatarCPF = (value) => {
-    return value
-      .replace(/\D/g, '')
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{3})(\d{1,2})/, '$1-$2')
-      .replace(/(-\d{2})\d+?$/, '$1');
+    // Remove tudo que não for dígito
+    const numeros = value.replace(/\D/g, '');
+    
+    // Limita a 11 dígitos
+    const cpf = numeros.slice(0, 11);
+    
+    // Se estiver vazio, retorna vazio
+    if (!cpf) return '';
+    
+    // Aplica a formatação
+    if (cpf.length <= 3) return cpf;
+    if (cpf.length <= 6) return `${cpf.slice(0, 3)}.${cpf.slice(3)}`;
+    if (cpf.length <= 9) return `${cpf.slice(0, 3)}.${cpf.slice(3, 6)}.${cpf.slice(6)}`;
+    return `${cpf.slice(0, 3)}.${cpf.slice(3, 6)}.${cpf.slice(6, 9)}-${cpf.slice(9, 11)}`;
   };
   
   // Formata NIT no padrão 111.11111.11-1
@@ -576,8 +563,82 @@ const GuiaGPS = () => {
     );
   };
   
-  // Busca dados adicionais do usuário no localStorage se necessário
-  // Removido o segundo useEffect que não é mais necessário
+  // Referência para controlar a montagem inicial
+  const isInitialMount = useRef(true);
+  
+  // Atualiza o contexto global quando os dados do formulário mudam
+  useEffect(() => {
+    // Evita atualização na montagem inicial
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    
+    // Atualiza o contexto apenas para campos válidos
+    const fieldsToSync = ['nome', 'cpf', 'dataNascimento', 'nit', 'email'];
+    const updates = {};
+    let hasValidUpdates = false;
+    
+    fieldsToSync.forEach(field => {
+      if (formData[field] && formData[field] !== '') {
+        // Validação específica para cada campo
+        let isValid = true;
+        
+        if (field === 'cpf' && formData[field].replace(/\D/g, '').length !== 11) {
+          isValid = false;
+        } else if (field === 'dataNascimento' && !validarDataBrasileira(formData[field])) {
+          isValid = false;
+        } else if (field === 'nit' && formData[field].replace(/\D/g, '').length !== 11) {
+          isValid = false;
+        }
+        
+        if (isValid) {
+          updates[field] = formData[field];
+          hasValidUpdates = true;
+        }
+      }
+    });
+    
+    if (hasValidUpdates) {
+      // Usa setTimeout para evitar atualizações em cascata
+      const timer = setTimeout(() => {
+        updateUserData(updates);
+      }, 0);
+      
+      return () => clearTimeout(timer);
+    }
+    
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    formData.nome, 
+    formData.cpf, 
+    formData.dataNascimento, 
+    formData.nit, 
+    formData.email, 
+    updateUserData, 
+    validarDataBrasileira
+  ]);
+  
+  // Carrega dados iniciais do contexto apenas uma vez
+  useEffect(() => {
+    if (userData) {
+      setFormData(prev => {
+        const newData = {
+          nome: prev.nome || userData.nome || '',
+          cpf: prev.cpf || userData.cpf || '',
+          dataNascimento: prev.dataNascimento || userData.dataNascimento || '',
+          nit: prev.nit || userData.nit || '',
+          email: prev.email || userData.email || ''
+        };
+        
+        // Só atualiza se houver mudanças
+        return Object.keys(newData).some(key => newData[key] !== prev[key]) 
+          ? { ...prev, ...newData } 
+          : prev;
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userData]);
 
   // Validação do formulário
   const validarFormulario = () => {
@@ -842,10 +903,8 @@ const GuiaGPS = () => {
                       type="text"
                       name="cpf"
                       value={formData.cpf}
-                      onChange={(e) => {
-                        e.target.value = formatarCPF(e.target.value);
-                        handleChange(e);
-                      }}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
                       placeholder="000.000.000-00"
                       maxLength="14"
                       required
