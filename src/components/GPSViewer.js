@@ -560,7 +560,7 @@ const GPSViewer = () => {
           { field: 'Código de Pagamento', value: '1406' },
           { field: 'Competência', value: dadosProcessados.competencia || 'Não informada' },
           { field: 'Data de Vencimento', value: dadosProcessados.dataVencimento ? formatarDataBrasileira(dadosProcessados.dataVencimento) : 'Não informada' },
-          { field: 'Valor Total', value: dadosProcessados.valor ? `R$ ${parseFloat(dadosProcessados.valor).toFixed(2).replace('.', ',')}` : 'Não informado' },
+          { field: 'Valor a Pagar', value: dadosProcessados.valor ? `R$ ${parseFloat(dadosProcessados.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'Não informado' },
           { 
             field: 'Código de Barras', 
             value: dadosProcessados.codigoBarras ? '' : 'Não gerado',
@@ -1186,7 +1186,7 @@ const generatePDFExportable = async (formData) => {
       { field: 'Código de Pagamento', value: '1406' },
       { field: 'Competência', value: dadosProcessados.competencia || 'Não informada' },
       { field: 'Data de Vencimento', value: dadosProcessados.dataVencimento ? formatarDataBrasileira(dadosProcessados.dataVencimento) : 'Não informada' },
-      { field: 'Valor Total', value: dadosProcessados.valor ? `R$ ${parseFloat(dadosProcessados.valor).toFixed(2).replace('.', ',')}` : 'Não informado' },
+      { field: 'Valor a Pagar', value: dadosProcessados.valor ? `R$ ${parseFloat(dadosProcessados.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'Não informado' },
       { 
         field: 'Código de Barras', 
         value: dadosProcessados.codigoBarras ? '' : 'Não gerado',
