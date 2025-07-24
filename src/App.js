@@ -22,22 +22,27 @@ import DARFViewer from './components/DARFViewer';
 
 function App() {
   const { updateUserData } = useUserData();
+  const hasLoadedUserData = React.useRef(false);
 
   // Efeito para sincronizar os dados do usuário do localStorage com o UserDataContext
   useEffect(() => {
+    if (hasLoadedUserData.current) return;
+    
     try {
       const isLoggedIn = localStorage.getItem('isLoggedIn');
       if (isLoggedIn) {
         const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-        if (userData && userData.user) {
+        if (userData?.user) {
           updateUserData({
             nome: userData.user.name || '',
             email: userData.user.email || ''
           });
         }
       }
+      hasLoadedUserData.current = true;
     } catch (error) {
       console.error('Erro ao carregar dados do usuário:', error);
+      hasLoadedUserData.current = true;
     }
   }, [updateUserData]);
 

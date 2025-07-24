@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useUserData } from '../contexts/UserDataContext';
 import { Form, Row, Col, InputGroup, Alert } from 'react-bootstrap';
+import { formatCPF, unformatCPF } from '../utils/formatters';
 // useNavigate e useLocation importados com alias para evitar conflitos
 import { Person, CreditCard, Calendar, FileEarmarkText } from 'react-bootstrap-icons';
 import { jsPDF } from 'jspdf';
@@ -241,6 +242,7 @@ const styles = {
 const GuiaGPS = () => {
   const navigate = useRouterNavigate();
   const location = useLocation();
+  const isInitialMount = useRef(true);
   // Obtém os dados do usuário logado
   const { name: userName } = useUserEmail();
   
@@ -406,7 +408,7 @@ const GuiaGPS = () => {
     
     // Para o CPF, sempre formate independentemente do valor
     if (name === 'cpf') {
-      const formattedCPF = formatarCPF(value);
+      const formattedCPF = formatCPF(value);
       
       // Atualiza o estado local
       setFormData(prev => ({
@@ -414,10 +416,9 @@ const GuiaGPS = () => {
         [name]: formattedCPF
       }));
       
-      // Atualiza o contexto global quando o CPF estiver completo
-      if (formattedCPF.replace(/\D/g, '').length === 11) {
-        updateUserData({ cpf: formattedCPF });
-      }
+      // Atualiza o contexto global em tempo real com o valor sem formatação
+      // Isso permite a sincronização entre componentes durante a digitação
+      updateUserData({ cpf: unformatCPF(formattedCPF) });
       return;
     }
     
@@ -483,23 +484,7 @@ const GuiaGPS = () => {
     }));
   };
 
-  // Formata o CPF enquanto digita
-  const formatarCPF = (value) => {
-    // Remove tudo que não for dígito
-    const numeros = value.replace(/\D/g, '');
-    
-    // Limita a 11 dígitos
-    const cpf = numeros.slice(0, 11);
-    
-    // Se estiver vazio, retorna vazio
-    if (!cpf) return '';
-    
-    // Aplica a formatação
-    if (cpf.length <= 3) return cpf;
-    if (cpf.length <= 6) return `${cpf.slice(0, 3)}.${cpf.slice(3)}`;
-    if (cpf.length <= 9) return `${cpf.slice(0, 3)}.${cpf.slice(3, 6)}.${cpf.slice(6)}`;
-    return `${cpf.slice(0, 3)}.${cpf.slice(3, 6)}.${cpf.slice(6, 9)}-${cpf.slice(9, 11)}`;
-  };
+  // Usa o formatador de CPF compartilhado
   
   // Formata NIT no padrão 111.11111.11-1
   const formatarNIT = (value) => {
@@ -563,9 +548,6 @@ const GuiaGPS = () => {
     );
   };
   
-  // Referência para controlar a montagem inicial
-  const isInitialMount = useRef(true);
-  
   // Atualiza o contexto global quando os dados do formulário mudam
   useEffect(() => {
     // Evita atualização na montagem inicial
@@ -618,6 +600,28 @@ const GuiaGPS = () => {
     updateUserData, 
     validarDataBrasileira
   ]);
+  
+  // Sincroniza o estado local com o contexto global
+  useEffect(() => {
+    // Não faz nada na montagem inicial
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    
+    // Se o CPF no contexto for diferente do estado local
+    // E o campo não estiver em foco (para evitar conflitos durante a digitação)
+    const currentUnformattedCPF = formData.cpf ? unformatCPF(formData.cpf) : '';
+    if (userData.cpf && userData.cpf !== currentUnformattedCPF && document.activeElement?.id !== 'cpf') {
+      // Formata o CPF do contexto antes de atualizar o estado local
+      const formattedCPF = formatCPF(userData.cpf);
+      setFormData(prev => ({
+        ...prev,
+        cpf: formattedCPF
+      }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userData.cpf, formatCPF, unformatCPF]); // Adicionadas as dependências necessárias
   
   // Carrega dados iniciais do contexto apenas uma vez
   useEffect(() => {

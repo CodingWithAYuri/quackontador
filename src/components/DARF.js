@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useUserData } from '../contexts/UserDataContext';
 import { Form, Row, Col, InputGroup } from 'react-bootstrap';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Person, FileEarmarkText } from 'react-bootstrap-icons';
+import { formatCPF, unformatCPF } from '../utils/formatters';
 import { useUserEmail } from '../hooks/useUserEmail';
 
 // Estilos inline para o componente
@@ -268,6 +269,8 @@ const styles = {
 };
 
 const DARF = () => {
+  const isInitialMount = useRef(true);
+  const isUpdatingCPF = useRef(false);
   const navigate = useNavigate();
   const location = useLocation();
   useUserEmail();
@@ -275,7 +278,7 @@ const DARF = () => {
 
   
   // Estado local para o formulário
-  // Função para formatar valor inicial
+  // Função para formatar valor inicial (memoizada fora do componente para evitar recriação)
   const formatarValorInicial = useCallback((valor) => {
     if (!valor || valor === '0,00' || valor === 0) return '0,00';
     
@@ -317,14 +320,27 @@ const DARF = () => {
     
     return '0,00';
   }, []);
+  
+  // Ref para controlar se já formatamos o valor inicial
+  const hasFormattedInitialValue = useRef(false);
 
-  const [formData, setFormData] = useState({
-    nome: userData.nome || '',
-    cpf: userData.cpf || '',
-    codigoReceita: '0190',
-    mesReferencia: userData.mesReferencia || '',
-    anoReferencia: userData.anoReferencia || '',
-    valorIr: formatarValorInicial(location.state?.valorIr) || '0,00'
+  const [formData, setFormData] = useState(() => {
+    // Formata o valor inicial diretamente no estado inicial
+    const initialValorIr = location.state?.valorIr 
+      ? formatarValorInicial(location.state.valorIr) 
+      : '0,00';
+    
+    // Formata o CPF inicial se existir
+    const formattedCPF = userData.cpf ? formatCPF(userData.cpf) : '';
+      
+    return {
+      nome: userData.nome || '',
+      cpf: formattedCPF,
+      codigoReceita: '0190',
+      mesReferencia: userData.mesReferencia || '',
+      anoReferencia: userData.anoReferencia || '',
+      valorIr: initialValorIr
+    };
   });
   
   const [carregando, setCarregando] = useState(false);
@@ -334,18 +350,17 @@ const DARF = () => {
   // Atualiza o contexto apenas quando o formulário for enviado ou quando sair da página
   // Removemos o efeito que atualizava o contexto a cada mudança no formData
   
-  // Força a formatação do valor inicial após o componente montar
+  // Efeito para sincronizar o valor quando location.state mudar
   useEffect(() => {
-    if (formData.valorIr) {
-      const valorAtualFormatado = formatarValorInicial(formData.valorIr);
-      if (valorAtualFormatado !== formData.valorIr) {
-        setFormData(prev => ({
-          ...prev,
-          valorIr: valorAtualFormatado
-        }));
-      }
+    if (location.state?.valorIr && !hasFormattedInitialValue.current) {
+      const valorFormatado = formatarValorInicial(location.state.valorIr);
+      setFormData(prev => ({
+        ...prev,
+        valorIr: valorFormatado
+      }));
+      hasFormattedInitialValue.current = true;
     }
-  }, [formData.valorIr, formatarValorInicial]); // Incluídas as dependências necessárias
+  }, [location.state?.valorIr, formatarValorInicial]);
 
   // Atualiza o estado quando location.state mudar
   useEffect(() => {
@@ -516,27 +531,45 @@ const DARF = () => {
     return `${parteInteiraFormatada},${parteDecimal}`;
   };
   
-  // Formata o CPF enquanto digita
-  const formatarCPF = (value) => {
-    // Remove tudo que não for dígito
-    const numeros = value.replace(/\D/g, '');
+  // Usa o formatador de CPF compartilhado
+
+  // Efeito para sincronizar o estado local com o contexto global
+  useEffect(() => {
+    // Não faz nada na montagem inicial
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
     
-    // Limita a 11 dígitos
-    const cpf = numeros.slice(0, 11);
+    // Adiciona uma flag para evitar atualizações cíclicas
+    // Se o CPF está sendo atualizado pelo handleCPFChange, não sincronize do contexto
+    if (isUpdatingCPF.current) {
+      return;
+    }
     
-    // Aplica a formatação
-    if (cpf.length <= 3) return cpf;
-    if (cpf.length <= 6) return `${cpf.slice(0, 3)}.${cpf.slice(3)}`;
-    if (cpf.length <= 9) return `${cpf.slice(0, 3)}.${cpf.slice(3, 6)}.${cpf.slice(6)}`;
-    return `${cpf.slice(0, 3)}.${cpf.slice(3, 6)}.${cpf.slice(6, 9)}-${cpf.slice(9, 11)}`;
-  };
+    // Se o CPF no contexto for diferente do estado local
+    // E o campo não estiver em foco (para evitar conflitos durante a digitação)
+    const currentUnformattedCPF = formData.cpf ? unformatCPF(formData.cpf) : '';
+    if (userData.cpf && userData.cpf !== currentUnformattedCPF && document.activeElement?.id !== 'cpf') {
+      // Formata o CPF do contexto antes de atualizar o estado local
+      const formattedCPF = formatCPF(userData.cpf);
+      setFormData(prev => ({
+        ...prev,
+        cpf: formattedCPF
+      }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userData.cpf]); // Apenas userData.cpf como dependência
 
   // Manipulador de mudança do CPF
   const handleCPFChange = (e) => {
     const { value } = e.target;
     
+    // Ativa a flag para evitar loop infinito
+    isUpdatingCPF.current = true;
+    
     // Formata o CPF enquanto digita
-    const cpfFormatado = formatarCPF(value);
+    const cpfFormatado = formatCPF(value);
     
     // Atualiza o estado local
     setFormData(prev => ({
@@ -544,10 +577,9 @@ const DARF = () => {
       cpf: cpfFormatado
     }));
     
-    // Atualiza o contexto global apenas quando o CPF estiver completo
-    if (cpfFormatado.replace(/\D/g, '').length === 11) {
-      updateUserData({ cpf: cpfFormatado });
-    }
+    // Atualiza o contexto global em tempo real com o valor sem formatação
+    // Isso permite a sincronização entre componentes durante a digitação
+    updateUserData({ cpf: unformatCPF(cpfFormatado) }); // Usa a função unformatCPF para garantir consistência
     
     // Limpa o erro de validação do CPF
     if (validationErrors.cpf) {
@@ -556,6 +588,11 @@ const DARF = () => {
         cpf: ''
       }));
     }
+    
+    // Desativa a flag após a atualização
+    setTimeout(() => {
+      isUpdatingCPF.current = false;
+    }, 0);
   };
   
   // Manipulador de mudança do valor do IR
